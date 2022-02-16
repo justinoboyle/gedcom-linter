@@ -1,0 +1,18 @@
+Level,Tag,Arguments,Belongs To,Meaning
+0,INDI,Individual_ID,top level,Define a new Individual with ID Individual_ID
+1,NAME,String with surname delimited by "/"s,INDI,Name of individual
+1,SEX,"M" or "F" without quotes,INDI,Sex of Individual
+1,BIRT,none,INDI,Birth of individual. Typically followed by 2 DATE record that specifies the date.
+1,DEAT,none,INDI,Death of individual. Typically followed by 2 DATE record that specifies the date.
+2,FAMC,Family_ID,INDI,Individual is a child in family with Family_ID
+2,FAMS,Family_ID,INDI,Individual is a spouse in family with Family_ID
+0,FAM,Family_ID,top level,Define a new Family with ID Family_ID
+1,MARR,none,FAM,Marriage event for family. Typically followed by 2 DATE record that specifies the date.
+1,HUSB,Individual_ID,FAM,Husband in family with ID Individual_ID
+1,WIFE,Individual_ID,FAM,Wife in family with ID Individual_ID
+1,CHIL,Individual_ID,FAM,Child in family with ID Individual_ID
+1,DIV,none,FAM,Divorce event for family. Typically followed by 2 DATE record that specifies the date.
+2,DATE,day month and year in Exact Format,"BIRT, DEAT, DEV or MARR",Date of event
+0,HEAD,none,top level,Optional header record at beginning of file
+0,TRLR,none,top level, Optional trailer record at end of file
+0,NOTE,any string,top level, optional comment
