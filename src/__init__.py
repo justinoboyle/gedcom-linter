@@ -38,9 +38,10 @@ class ParsedGEDCOM:
     def __str__(self):
         return str(self.level) + "|" + self.tag + "|" + ("Y" if self.valid else "N") + "|" + " ".join(self.args)
 
-# Read from standard input
-for line in fileinput.input():
-    print("<-- " + line.strip())
-    parsed = ParsedGEDCOM(line)
-    print("--> " + str(parsed))
-    pass
+def runLinter():
+    # Read from standard input
+    for line in fileinput.input():
+        print("<-- " + line.strip())
+        parsed = ParsedGEDCOM(line)
+        print("--> " + str(parsed))
+        pass

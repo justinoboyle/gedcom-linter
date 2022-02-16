@@ -1,0 +1,13 @@
+#! /usr/bin/env bash
+
+# Check if PYTHON3PATH is set. If not, throw an error
+if [ -z "$PYTHON3PATH" ]; then
+    echo "Environment variable PYTHON3PATH is not set. Please set it to your python3 executable."
+    printf "\n"
+    echo "Usually, you can get away with something like:"
+    echo 'echo "export PYTHON3PATH=$(which python3)" >> ~/.zshrc && source ~/.zshrc'
+    exit 1
+fi
+
+# Run the program with specified arguments
+$PYTHON3PATH . $@
