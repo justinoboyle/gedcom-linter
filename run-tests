@@ -11,3 +11,4 @@ fi
 
 # Run the program with specified arguments
 $PYTHON3PATH ./tests $@
+# pytest tests/__main__.py
