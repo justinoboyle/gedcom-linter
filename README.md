@@ -17,6 +17,11 @@ echo "export PYTHON3PATH=$(which python3)" >> ~/.zshrc && source ~/.zshrc
 
 Please note, this will modify your `.zshrc`.
 
+### Supported platforms
+
+This software is designed for UNIX-like systems (for example, Linux and macOS). 
+If you need to run this on Windows, try [WSL](https://ubuntu.com/wsl).
+
 ## Running tests
 
 Running the application can be accomplished with the `run-tests` shell script. It
