@@ -1,4 +1,6 @@
 # import the program code and execute it
-from src import runLinter
+from src import *
 
-runLinter()
+lines = runLinter()
+individuals, families = runParser(lines)
+printer(individuals, families)
