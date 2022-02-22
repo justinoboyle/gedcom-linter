@@ -10,5 +10,5 @@ if [ -z "$PYTHON3PATH" ]; then
 fi
 
 # Run the program with specified arguments
-$PYTHON3PATH ./tests $@
+cat "samples/doe_family.ged" | $PYTHON3PATH tests.py
 # pytest tests/__main__.py
