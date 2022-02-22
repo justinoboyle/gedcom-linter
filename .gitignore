@@ -231,3 +231,5 @@ $RECYCLE.BIN/
 output*
 output.*
 *.output
+
+~$*.xlsx
