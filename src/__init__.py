@@ -16,6 +16,7 @@ def isValidTag(tag):
 
 class ParsedGEDCOM:
     def __init__(self, line):
+        ids = []
         builder = line.strip().split(" ")
 
         # the level of the input line, e.g. 0, 1, 2
@@ -34,6 +35,12 @@ class ParsedGEDCOM:
             self.args = builder[2:]
 
         self.valid = isValidTag(self.tag)
+
+        if self.tag == "INDI":
+            if self.args[0] in ids:
+                pass
+            else:
+                ids.append(self.args[0])
 
     def __str__(self):
         return str(self.level) + "|" + self.tag + "|" + ("Y" if self.valid else "N") + "|" + " ".join(self.args)
