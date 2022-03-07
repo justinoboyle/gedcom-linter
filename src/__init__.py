@@ -233,6 +233,20 @@ def runParser(lines):
         else:
             indi.age = (datetime.datetime.strptime(indi.death, "%Y-%m-%d") - datetime.datetime.strptime(indi.birthday, "%Y-%m-%d")).days // 365
 
+    # US04 Marriage before divorce (Max)
+    # for each family, make sure that the date of marriage is before the date of divorce
+    for fam in mergedFamilies:
+        if fam.married != "N/A" and fam.divorced != "N/A":
+            if datetime.datetime.strptime(fam.married, "%Y-%m-%d") > datetime.datetime.strptime(fam.divorced, "%Y-%m-%d"):
+                print("ERROR: FAMILY: US04: " + fam.id + ": Marriage occurs after divorce")
+
+    # US23 Unique name and birth date (Max) 
+    # for each individual, make sure that everyone has a unique name
+    for indi in individuals:
+        for indi2 in individuals:
+            if indi.name == indi2.name and indi.id != indi2.id:
+                print("ERROR: INDIVIDUAL: US23: " + indi.id + ": " + indi.name + ": is the same name as " + indi2.id + ": " + indi2.name)
+
     return individuals, mergedFamilies
 
 
