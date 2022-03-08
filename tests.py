@@ -10,23 +10,37 @@ individuals, families = runParser(lines)
 # run tests
 class TestGEDCOM(unittest.TestCase):
 
+    # US03 - Birth Before Death 
+    # All birthdays should be before deaths
+    def test_US03(self):
+        ''' It should fail if birthday is after death  '''
+        failed = False
+        try:
+            individual = Individual('@TEST', 5)
+            individual.setBirthday(datetime.datetime(2019, 1, 1))
+            individual.setDeath(datetime.datetime(2018, 1, 1))
+        except:
+            failed = True
+        self.assertTrue(failed)
+
+    # US07 - Less then 150 years old
+    # All users have to be less than 150 years old
+    def test_US07(self):
+        ''' It should fail when an individual is older than 150 years '''
+        failed = False
+        try:
+            Individual('@TEST', 5).setAge(151)
+        except:
+            failed = True
+        self.assertTrue(failed)
+
     # US22 - Unique IDs
     # All individual IDs should be unique and all family IDs should be unique
     def test_US22(self):
         ''' Check if given list contains any duplicates '''
         return self.assertEqual(len(individuals), len(set(individuals))) and self.assertEqual(len(families), len(set(families)))
 
-    # US07 - Less then 150 years old
-    # All users have to be less than 150 years old
-    
-    def test_US07(self):
-        ''' It should fail when an individual is older than 150 years '''
-        failed = False
-        try:
-            Individual('@TEST', 151).setAge(151)
-        except:
-            failed = True
-        self.assertTrue(failed)
+
 
 # required unittest boilerplate
 if __name__ == '__main__':
