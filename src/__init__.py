@@ -53,8 +53,6 @@ def runLinter():
         lines.append(ParsedGEDCOM(line))
     return lines
 
-# Max's Additions
-
 class Individual:
     def __init__(self, id, level):
         self.id = id
@@ -67,6 +65,27 @@ class Individual:
         self.death = "N/A"
         self.children = []
         self.spouse = "N/A"
+
+    def setAge(self, age):
+        if age >= 150:
+            raise Exception("Age must be less than 130!")
+        self.age = age
+
+    def validateBirthDeath(self):
+        if self.birthday == "N/A" or self.death == "N/A":
+            pass
+        else:
+            if datetime.datetime.strptime(self.birthday, '%Y-%m-%d') > datetime.datetime.strptime(self.death, '%Y-%m-%d'):
+                raise Exception("Birthday must be before death!")
+
+    def setBirthday(self, birthday):
+        self.birthday = birthday
+        self.validateBirthDeath()
+
+    def setDeath(self, death):
+        self.death = death
+        self.validateBirthDeath()
+
 
     def __str__(self):
          return self.id
@@ -144,12 +163,12 @@ def runParser(lines):
                 elif line.tag == "BIRT":
                     i+=1
                     # individuals[-1].birthday = 'YYYY-MM-DD'
-                    individuals[-1].birthday = lines[i].args[2] + "-" + toMonths(lines[i].args[1]) + "-" + lines[i].args[0].zfill(2)
+                    individuals[-1].setBirthday(lines[i].args[2] + "-" + toMonths(lines[i].args[1]) + "-" + lines[i].args[0].zfill(2))
                 elif line.tag == "DEAT":
                     if line.args[0] == "Y":
                         individuals[-1].isAlive = False
                     i+=1
-                    individuals[-1].death = lines[i].args[2] + "-" + toMonths(lines[i].args[1]) + "-" + lines[i].args[0].zfill(2)
+                    individuals[-1].setDeath(lines[i].args[2] + "-" + toMonths(lines[i].args[1]) + "-" + lines[i].args[0].zfill(2))
                 elif line.tag == "FAMC":
                     # search families for args[0], in the family add to children
                     for fam in families:
@@ -229,9 +248,9 @@ def runParser(lines):
     # get the age of each individual alive or dead
     for indi in individuals:
         if indi.isAlive:
-            indi.age = (datetime.datetime.today() - datetime.datetime.strptime(indi.birthday, "%Y-%m-%d")).days // 365
+            indi.setAge((datetime.datetime.today() - datetime.datetime.strptime(indi.birthday, "%Y-%m-%d")).days // 365)
         else:
-            indi.age = (datetime.datetime.strptime(indi.death, "%Y-%m-%d") - datetime.datetime.strptime(indi.birthday, "%Y-%m-%d")).days // 365
+            indi.setAge((datetime.datetime.strptime(indi.death, "%Y-%m-%d") - datetime.datetime.strptime(indi.birthday, "%Y-%m-%d")).days // 365)
 
     return individuals, mergedFamilies
 
