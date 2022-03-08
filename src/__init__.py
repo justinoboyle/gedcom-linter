@@ -53,8 +53,6 @@ def runLinter():
         lines.append(ParsedGEDCOM(line))
     return lines
 
-# Max's Additions
-
 class Individual:
     def __init__(self, id, level):
         self.id = id
@@ -67,6 +65,11 @@ class Individual:
         self.death = "N/A"
         self.children = []
         self.spouse = "N/A"
+
+    def setAge(self, age):
+        if age >= 150:
+            raise Exception("Age must be less than 130!")
+        self.age = age
 
     def __str__(self):
          return self.id
@@ -229,9 +232,9 @@ def runParser(lines):
     # get the age of each individual alive or dead
     for indi in individuals:
         if indi.isAlive:
-            indi.age = (datetime.datetime.today() - datetime.datetime.strptime(indi.birthday, "%Y-%m-%d")).days // 365
+            indi.setAge((datetime.datetime.today() - datetime.datetime.strptime(indi.birthday, "%Y-%m-%d")).days // 365)
         else:
-            indi.age = (datetime.datetime.strptime(indi.death, "%Y-%m-%d") - datetime.datetime.strptime(indi.birthday, "%Y-%m-%d")).days // 365
+            indi.setAge((datetime.datetime.strptime(indi.death, "%Y-%m-%d") - datetime.datetime.strptime(indi.birthday, "%Y-%m-%d")).days // 365)
 
     return individuals, mergedFamilies
 

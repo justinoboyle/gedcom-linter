@@ -16,6 +16,17 @@ class TestGEDCOM(unittest.TestCase):
         ''' Check if given list contains any duplicates '''
         return self.assertEqual(len(individuals), len(set(individuals))) and self.assertEqual(len(families), len(set(families)))
 
+    # US07 - Less then 150 years old
+    # All users have to be less than 150 years old
+    
+    def test_US07(self):
+        ''' It should fail when an individual is older than 150 years '''
+        failed = False
+        try:
+            Individual('@TEST', 151).setAge(151)
+        except:
+            failed = True
+        self.assertTrue(failed)
 
 # required unittest boilerplate
 if __name__ == '__main__':
