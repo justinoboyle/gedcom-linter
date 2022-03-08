@@ -40,6 +40,19 @@ class TestGEDCOM(unittest.TestCase):
         ''' Check if given list contains any duplicates '''
         return self.assertEqual(len(individuals), len(set(individuals))) and self.assertEqual(len(families), len(set(families)))
 
+    # US04 - Marriage before divorce
+    # Marriage should occur before divorce of spouses (if divorce is listed)
+    def test_US04(self):
+        ''' Check if marriage occurs before divorce '''
+        for family in families:
+            if family.divorced != None:
+                self.assertTrue(family.married <= family.divorced)
+
+    # US23 - Unique Name and Birth Date
+    # All individuals should have a unique name and birth date
+    def test_US23(self):
+        ''' Check if given list contains any duplicates '''
+        return self.assertEqual(len(individuals), len(set(individuals)))
 
 
 # required unittest boilerplate
