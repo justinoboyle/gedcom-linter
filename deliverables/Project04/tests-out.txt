@@ -1,0 +1,7 @@
+λ ~/proj/gedcom-linter/ main* ./run-tests > deliverables/Project04/tests-out.txt
+
+.....
+----------------------------------------------------------------------
+Ran 5 tests in 0.000s
+
+OK
