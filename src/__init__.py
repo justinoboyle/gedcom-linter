@@ -77,6 +77,11 @@ class Individual:
         else:
             if datetime.datetime.strptime(self.birthday, '%Y-%m-%d') > datetime.datetime.strptime(self.death, '%Y-%m-%d'):
                 raise Exception("Birthday must be before death!")
+    #if birthday does not equal N/A
+        # if datetime.datetime.strptime(self.birthday, '%Y-%m-%d') --> check if thats After today
+        # raise Exception("Birthday is after current date")
+        
+
 
     def setBirthday(self, birthday):
         self.birthday = birthday
