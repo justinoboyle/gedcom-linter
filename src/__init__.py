@@ -2,6 +2,7 @@ import fileinput
 import csv
 import os
 import datetime
+from typing_extensions import Self
 
 tagNames = []
 
@@ -54,6 +55,7 @@ def runLinter():
     return lines
 
 class Individual:
+
     def __init__(self, id, level):
         self.id = id
         self.level = level
@@ -65,6 +67,8 @@ class Individual:
         self.death = "N/A"
         self.children = []
         self.spouse = "N/A"
+        self.marriage = "N/A"
+     
 
     def setAge(self, age):
         if age >= 150:
@@ -72,14 +76,34 @@ class Individual:
         self.age = age
 
     def validateBirthDeath(self):
+
+        from datetime import datetime
+        today = datetime.today()
+        datem = datetime(today.year, today.month, 1)
+
         if self.birthday == "N/A" or self.death == "N/A":
             pass
         else:
             if datetime.datetime.strptime(self.birthday, '%Y-%m-%d') > datetime.datetime.strptime(self.death, '%Y-%m-%d'):
                 raise Exception("Birthday must be before death!")
-    #if birthday does not equal N/A
-        # if datetime.datetime.strptime(self.birthday, '%Y-%m-%d') --> check if thats After today
-        # raise Exception("Birthday is after current date")
+        #US01 Dates before current date
+        if self.birthday == "N/A":
+            pass
+        else:
+            if datetime.datetime.strptime(self.birthday, '%Y-%m-%d') > datetime(today.year, today.month, 1): 
+                raise Exception("Birdthday is must be before current date")
+        if self.death == "N/A":
+            pass
+        else:
+            if datetime.datetime.strptime(self.death, '%Y-%m-%d') > datetime(today.year, today.month, 1):
+                raise Exception("Death must be before current date")
+             # US05 Marriabe before death
+        if self.married == "N/A":
+            pass
+        else:
+            if datetime.datetime.strptime(self.married, "%Y-%m-%d") > datetime.datetime.strptime(self.death, "%Y-%m-%d"):
+                print("Marriage should come before death")
+        
         
 
 
@@ -108,6 +132,9 @@ class Family:
         self.wifeId = "N/A"
         self.wifeName = "N/A"
         self.children = []
+        self.death = "N/A"
+
+      
     
     def __str__(self):
         return self.id
@@ -263,6 +290,7 @@ def runParser(lines):
         if fam.married != "N/A" and fam.divorced != "N/A":
             if datetime.datetime.strptime(fam.married, "%Y-%m-%d") > datetime.datetime.strptime(fam.divorced, "%Y-%m-%d"):
                 print("ERROR: FAMILY: US04: " + fam.id + ": Marriage occurs after divorce")
+
 
     # US23 Unique name and birth date (Max) 
     # for each individual, make sure that everyone has a unique name

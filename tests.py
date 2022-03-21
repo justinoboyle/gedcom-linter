@@ -34,6 +34,31 @@ class TestGEDCOM(unittest.TestCase):
             failed = True
         self.assertTrue(failed)
 
+    # US01 - Dates before current date
+    # Dates should come before current date
+    def test_US01(self):
+        ''' It should fail when a date occurs after current date '''
+        failed = False
+        try:
+            individual = Individual('@TEST', 5)
+            individual.setBirthday(datetime.datetime(2025, 1, 1))
+        except:
+            failed = True
+        self.assertTrue(failed)
+
+    # US05 - Marriage before death
+    # Marriage should occur before death
+    def test_US05(self):
+        ''' It should fail when an individual marries after their deathdate '''
+        failed = False
+        try:
+            individual = Individual('@TEST', 5)
+            individual.setMarriage(datetime.datetime(2019, 1, 1))
+            individual.setDeath(datetime.datetime(2018, 1, 1))
+        except:
+            failed = True
+        self.assertTrue(failed)
+
     # US22 - Unique IDs
     # All individual IDs should be unique and all family IDs should be unique
     def test_US22(self):
