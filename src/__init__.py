@@ -280,8 +280,22 @@ def runParser(lines):
             if indi.name == indi2.name and indi.id != indi2.id:
                 print("ERROR: INDIVIDUAL: US23: " + indi.id + ": " + indi.name + ": is the same name as " + indi2.id + ": " + indi2.name)
 
-    return individuals, mergedFamilies
+    # US11 No Bigamy (Irakli)
+    # Marriage should not occur during marriage to another spouse
+    indis = {}
+    for fam in mergedFamilies:
+        if fam.wifeId in indis or fam.husbandId in indis:
+            print('bigamy')
+        else :
+            indis[fam.wifeId] = 1
+            indis[fam.husbandId] = 1
 
+        # US15 Fewer than 15 siblings (Irakli)
+        # There should be fewere than 15 siblings in a family
+        if len(fam.children) >= 15:
+            print("too many siblings")
+
+    return individuals, mergedFamilies
 
 def printer(individuals, families):
     # create a table of individuals and families using ljust to create whitespace and keep table aligned
