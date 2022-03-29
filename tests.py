@@ -79,7 +79,6 @@ class TestGEDCOM(unittest.TestCase):
         ''' Check if given list contains any duplicates '''
         return self.assertEqual(len(individuals), len(set(individuals)))
 
-
 # required unittest boilerplate
 if __name__ == '__main__':
     unittest.main()
