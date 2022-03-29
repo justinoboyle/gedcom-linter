@@ -118,6 +118,9 @@ class Family:
             self.children.append(child.id)
         else:
             raise Exception("Last name of husband and child must match!")
+
+        if datetime.datetime.strptime(self.married, "%Y-%m-%d") < datetime.datetime.strptime(child.birthday, "%Y-%m-%d"):
+            raise Exception("Child can't be born before parents were married!")
     
     def __str__(self):
         return self.id

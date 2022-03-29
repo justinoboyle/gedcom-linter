@@ -42,6 +42,25 @@ class TestGEDCOM(unittest.TestCase):
             failed = True
         self.assertTrue(failed)
 
+    # US08 - Birth before marriage of parents
+    # Children should be born after marriage of parents
+    def test_US08(self):
+        ''' It should fail when a child is born after parents are married '''
+        failed = False
+        try:
+            family = Family('@FAM1', 1)
+            family.husbandName = "Dave Smith"
+            family.married = "2021-01-01"
+
+            child = Individual('@CHILD', 2)
+            child.birthday = "2021-01-02"
+            child.name = "John Smith"
+
+            family.addChild(child)
+        except:
+            failed = True
+        self.assertTrue(failed)
+
     # US16 - Male last names
     # All male members of a family should have the same last name
     def test_US16(self):
