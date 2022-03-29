@@ -42,6 +42,25 @@ class TestGEDCOM(unittest.TestCase):
             failed = True
         self.assertTrue(failed)
 
+    # US16 - Male last names
+    # All male members of a family should have the same last name
+    def test_US16(self):
+        ''' It should fail if you create a man with a different last name in a family '''
+        failed = False
+        try:
+            person1 = Individual('@TEST1', 5)
+            person1.name = "Dave Smith"
+
+            person2 = Individual('@TEST2', 4)
+            person2.name = "John Hunt"
+
+            family = Family('@FAM1', 5)
+            family.addHusband(person1)
+            family.addChild(person2)
+        except:
+            failed = True
+        self.assertTrue(failed)
+
     # US22 - Unique IDs
     # All individual IDs should be unique and all family IDs should be unique
     def test_US22(self):
