@@ -103,6 +103,12 @@ class Individual:
         else:
             if datetime.datetime.strptime(self.married, "%Y-%m-%d") > datetime.datetime.strptime(self.death, "%Y-%m-%d"):
                 print("Marriage should come before death")
+        #US 10
+        if self.married == "N/A":
+            pass
+        else:
+            if datetime.datetime.strptime(self.married, "%Y-%m-%d") - datetime.datetime.strptime(self.birthday, '%Y-%m-%d') < 14:
+                print("Marriage should come after the age of 14")
         
         
 

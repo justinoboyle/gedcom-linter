@@ -58,6 +58,19 @@ class TestGEDCOM(unittest.TestCase):
         except:
             failed = True
         self.assertTrue(failed)
+    
+    # US10 -Marriage after 14
+    # Marriage should occur after the age of 14
+    def test_US10(self):
+        ''' It should fail when marriage occurs before age of 14 '''
+        failed = False
+        try:
+            individual = Individual('@TEST', 5)
+            individual.setBirthday(datetime.datetime(2014, 1, 1))
+            individual.setMarriage(datetime.datetime(2020, 1, 1))
+        except:
+            failed = True
+        self.assertTrue(failed)
 
     # US22 - Unique IDs
     # All individual IDs should be unique and all family IDs should be unique
