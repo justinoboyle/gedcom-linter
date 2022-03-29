@@ -259,6 +259,28 @@ def runParser(lines):
             if datetime.datetime.strptime(fam.married, "%Y-%m-%d") > datetime.datetime.strptime(fam.divorced, "%Y-%m-%d"):
                 print("ERROR: FAMILY: US04: " + fam.id + ": Marriage occurs after divorce")
 
+    # US09 Birth before death of parents
+    # for each individual, make sure that the date of birth is before the date of death of parents
+    for indi in individuals:
+        if indi.isAlive:
+            if indi.father != "N/A" and indi.mother != "N/A":
+                if datetime.datetime.strptime(indi.birthday, "%Y-%m-%d") > datetime.datetime.strptime(indi.father.death, "%Y-%m-%d"):
+                    print("ERROR: INDIVIDUAL: US09: " + indi.id + ": Birth occurs after death of father")
+                if datetime.datetime.strptime(indi.birthday, "%Y-%m-%d") > datetime.datetime.strptime(indi.mother.death, "%Y-%m-%d"):
+                    print("ERROR: INDIVIDUAL: US09: " + indi.id + ": Birth occurs after death of mother")
+
+    # US13 Birth dates of siblings should be more than 8 months apart or less than 2 days apart
+    # for each family, make sure that the birth dates of siblings are more than 8 months apart or less than 2 days apart
+    for fam in mergedFamilies:
+        if fam.children != []:
+            for child in fam.children:
+                for sibling in fam.children:
+                    if child != sibling:
+                        if datetime.datetime.strptime(individuals[child].birthday, "%Y-%m-%d") - datetime.datetime.strptime(individuals[sibling].birthday, "%Y-%m-%d") > datetime.timedelta(days=181):
+                            print("ERROR: FAMILY: US13: " + fam.id + ": Birth dates of siblings are more than 8 months apart")
+                        elif datetime.datetime.strptime(individuals[child].birthday, "%Y-%m-%d") - datetime.datetime.strptime(individuals[sibling].birthday, "%Y-%m-%d") < datetime.timedelta(days=-2):
+                            print("ERROR: FAMILY: US13: " + fam.id + ": Birth dates of siblings are less than 2 days apart")
+
     # US23 Unique name and birth date (Max) 
     # for each individual, make sure that everyone has a unique name
     for indi in individuals:
