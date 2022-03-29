@@ -281,6 +281,45 @@ def runParser(lines):
             if datetime.datetime.strptime(fam.married, "%Y-%m-%d") > datetime.datetime.strptime(fam.divorced, "%Y-%m-%d"):
                 print("ERROR: FAMILY: US04: " + fam.id + ": Marriage occurs after divorce")
 
+    # US09 Birth before death of parents
+    # for each family make sure every child has a birthday before the death of the mother and father
+    for fam in mergedFamilies:
+        if fam.married != "N/A":
+            for child in fam.children:
+                for indi in individuals:
+                    if indi.id == child:
+                        # find the birthday of the father and mother
+                        for indi2 in individuals:
+                            if indi2.id == fam.husband_id:
+                                fatherDeath = indi2.death
+                            if indi2.id == fam.wife_id:
+                                motherDeath = indi2.death
+                        # if the child's birthday is before the death of the father or mother, print an error
+                        if (fatherDeath != "N/A") and datetime.datetime.strptime(indi.birthday, "%Y-%m-%d") > datetime.datetime.strptime(fatherDeath, "%Y-%m-%d"):
+                            print("ERROR: FAMILY: US09: " + fam.id + ": Child " + indi.id + " born " + indi.birthday + " after death of father " + fam.husband_id + " " + fatherDeath)
+                        if (motherDeath != "N/A") and datetime.datetime.strptime(indi.birthday, "%Y-%m-%d") > datetime.datetime.strptime(motherDeath, "%Y-%m-%d"):
+                            print("ERROR: FAMILY: US09: " + fam.id + ": Child " + indi.id + " born " + indi.birthday + " after death of mother " + fam.wife_id + " " + motherDeath)
+
+    # US13 Birth dates of siblings should be more than 8 months apart or less than 2 days apart
+    # for each family, make sure that the birth dates of siblings are more than 8 months apart or less than 2 days apart
+    for fam in mergedFamilies:
+        if fam.children != []:
+            for child in fam.children:
+                for indi in individuals:
+                    if indi.id == child:
+                        # find the birthday of the child
+                        childBirth = indi.birthday
+                        # find the birthdays of the siblings
+                        siblings = []
+                        for sibling in fam.children:
+                            if sibling != child:
+                                for indi2 in individuals:
+                                    if indi2.id == sibling:
+                                        siblings.append(indi2.birthday)
+                        # if the birthdays of the siblings greater than 2 days but less than 8 months apart, print an error
+                        for sibling in siblings:
+                            if (datetime.datetime.strptime(childBirth, "%Y-%m-%d") - datetime.datetime.strptime(sibling, "%Y-%m-%d")).days > 2 and (datetime.datetime.strptime(childBirth, "%Y-%m-%d") - datetime.datetime.strptime(sibling, "%Y-%m-%d")).days < 8*30:
+                                print("ERROR: FAMILY: US13: " + fam.id + ": Sibling " + sibling + " born " + sibling + " more than 2 days apart from child " + child + " born " + childBirth)
     # US23 Unique name and birth date (Max) 
     # for each individual, make sure that everyone has a unique name
     for indi in individuals:
