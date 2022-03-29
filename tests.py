@@ -61,6 +61,26 @@ class TestGEDCOM(unittest.TestCase):
             failed = True
         self.assertTrue(failed)
 
+    # US11 - No bigamy
+    # Marriage should not occur during marriage to another spouse
+    def test_US11(self):
+        failed = False
+        try:
+
+            family1 = Family('@FAM1', 1)
+            husband1 = Individual('@HUSB1', 2)
+            husband1.name = "Dave Smith"
+            family1.married = "2021-01-01"
+            family1.setHusband(husband1)
+
+            family2 = Family('@FAM2', 1)
+            family2.married = "2021-01-01"
+            family2.setHusband(husband1)
+
+        except:
+            failed = True
+        self.assertTrue(failed)
+
     # US16 - Male last names
     # All male members of a family should have the same last name
     def test_US16(self):

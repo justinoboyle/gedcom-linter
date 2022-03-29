@@ -65,6 +65,7 @@ class Individual:
         self.death = "N/A"
         self.children = []
         self.spouse = "N/A"
+        self.family = "N/A"
 
     def setAge(self, age):
         if age >= 150:
@@ -105,6 +106,8 @@ class Family:
         self.children = []
 
     def addHusband(self, husband):
+        if husband.family != "N/A":
+            raise Exception("Husband already has a family!")
         self.husbandId = husband.id
         self.husbandName = husband.name
 
