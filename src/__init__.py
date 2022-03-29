@@ -260,14 +260,23 @@ def runParser(lines):
                 print("ERROR: FAMILY: US04: " + fam.id + ": Marriage occurs after divorce")
 
     # US09 Birth before death of parents
-    # for each individual, make sure that the date of birth is before the date of death of parents
-    for indi in individuals:
-        if indi.isAlive:
-            if indi.father != "N/A" and indi.mother != "N/A":
-                if datetime.datetime.strptime(indi.birthday, "%Y-%m-%d") > datetime.datetime.strptime(indi.father.death, "%Y-%m-%d"):
-                    print("ERROR: INDIVIDUAL: US09: " + indi.id + ": Birth occurs after death of father")
-                if datetime.datetime.strptime(indi.birthday, "%Y-%m-%d") > datetime.datetime.strptime(indi.mother.death, "%Y-%m-%d"):
-                    print("ERROR: INDIVIDUAL: US09: " + indi.id + ": Birth occurs after death of mother")
+    # for each family make sure every child has a birthday before the death of the mother and father
+    for fam in mergedFamilies:
+        if fam.married != "N/A":
+            for child in fam.children:
+                for indi in individuals:
+                    if indi.id == child:
+                        # find the birthday of the father and mother
+                        for indi2 in individuals:
+                            if indi2.id == fam.husband_id:
+                                fatherDeath = indi2.death
+                            if indi2.id == fam.wife_id:
+                                motherDeath = indi2.death
+                        # if the child's birthday is before the death of the father or mother, print an error
+                        if datetime.datetime.strptime(indi.birthday, "%Y-%m-%d") < datetime.datetime.strptime(fatherDeath, "%Y-%m-%d"):
+                            print("ERROR: FAMILY: US09: " + fam.id + ": Child " + indi.id + " born " + indi.birthday + " before death of father " + fam.husband_id + " " + fatherDeath)
+                        if datetime.datetime.strptime(indi.birthday, "%Y-%m-%d") < datetime.datetime.strptime(motherDeath, "%Y-%m-%d"):
+                            print("ERROR: FAMILY: US09: " + fam.id + ": Child " + indi.id + " born " + indi.birthday + " before death of mother " + fam.wife_id + " " + motherDeath)
 
     # US13 Birth dates of siblings should be more than 8 months apart or less than 2 days apart
     # for each family, make sure that the birth dates of siblings are more than 8 months apart or less than 2 days apart
