@@ -23,6 +23,14 @@ class TestGEDCOM(unittest.TestCase):
             failed = True
         self.assertTrue(failed)
 
+    # US04 - Marriage before divorce
+    # Marriage should occur before divorce of spouses (if divorce is listed)
+    def test_US04(self):
+        ''' Check if marriage occurs before divorce '''
+        for family in families:
+            if family.divorced != None:
+                self.assertTrue(family.married <= family.divorced)
+
     # US07 - Less then 150 years old
     # All users have to be less than 150 years old
     def test_US07(self):
@@ -39,14 +47,6 @@ class TestGEDCOM(unittest.TestCase):
     def test_US22(self):
         ''' Check if given list contains any duplicates '''
         return self.assertEqual(len(individuals), len(set(individuals))) and self.assertEqual(len(families), len(set(families)))
-
-    # US04 - Marriage before divorce
-    # Marriage should occur before divorce of spouses (if divorce is listed)
-    def test_US04(self):
-        ''' Check if marriage occurs before divorce '''
-        for family in families:
-            if family.divorced != None:
-                self.assertTrue(family.married <= family.divorced)
 
     # US23 - Unique Name and Birth Date
     # All individuals should have a unique name and birth date
