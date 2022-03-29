@@ -65,6 +65,7 @@ class Individual:
         self.death = "N/A"
         self.children = []
         self.spouse = "N/A"
+        self.family = "N/A"
 
     def setAge(self, age):
         if age >= 150:
@@ -103,6 +104,27 @@ class Family:
         self.wifeId = "N/A"
         self.wifeName = "N/A"
         self.children = []
+
+    def addHusband(self, husband):
+        if husband.family != "N/A":
+            raise Exception("Husband already has a family!")
+        self.husbandId = husband.id
+        self.husbandName = husband.name
+
+    def addChild(self, child):
+        if datetime.datetime.strptime(self.married, "%Y-%m-%d") > datetime.datetime.strptime(child.birthday, "%Y-%m-%d"):
+            raise Exception("Child can't be born before parents were married!")
+            
+        # get last name of husbandName
+        husbandLastName = self.husbandName.split(" ")[-1]
+        # get last name of childName
+        childLastName = child.name.split(" ")[-1]
+        # if last name of husbandName == last name of childName
+        if husbandLastName == childLastName:
+            self.children.append(child.id)
+        else:
+            raise Exception("Last name of husband and child must match!")
+
     
     def __str__(self):
         return self.id
