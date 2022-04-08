@@ -299,6 +299,16 @@ def runParser(lines):
                             print("ERROR: FAMILY: US09: " + fam.id + ": Child " + indi.id + " born " + indi.birthday + " after death of father " + fam.husband_id + " " + fatherDeath)
                         if (motherDeath != "N/A") and datetime.datetime.strptime(indi.birthday, "%Y-%m-%d") > datetime.datetime.strptime(motherDeath, "%Y-%m-%d"):
                             print("ERROR: FAMILY: US09: " + fam.id + ": Child " + indi.id + " born " + indi.birthday + " after death of mother " + fam.wife_id + " " + motherDeath)
+    
+    # US11 No Bigamy (Irakli)
+    # Marriage should not occur during marriage to another spouse
+    indis = {}
+    for fam in mergedFamilies:
+        if fam.wifeId in indis or fam.husbandId in indis:
+            print('bigamy')
+        else :
+            indis[fam.wifeId] = 1
+            indis[fam.husbandId] = 1
 
     # US13 Birth dates of siblings should be more than 8 months apart or less than 2 days apart
     # for each family, make sure that the birth dates of siblings are more than 8 months apart or less than 2 days apart
@@ -320,41 +330,46 @@ def runParser(lines):
                         for sibling in siblings:
                             if (datetime.datetime.strptime(childBirth, "%Y-%m-%d") - datetime.datetime.strptime(sibling, "%Y-%m-%d")).days > 2 and (datetime.datetime.strptime(childBirth, "%Y-%m-%d") - datetime.datetime.strptime(sibling, "%Y-%m-%d")).days < 8*30:
                                 print("ERROR: FAMILY: US13: " + fam.id + ": Sibling " + sibling + " born " + sibling + " more than 2 days apart from child " + child + " born " + childBirth)
+    
+    # US18 Siblings should not marry one another
+    # for each family, make sure that the marriage of siblings should not occur
+    for fam in mergedFamilies:
+        if fam.children != []:
+            for child in fam.children:
+                for indi in individuals:
+                    if indi.id == child:
+                        # find the birthday of the child
+                        childBirth = indi.birthday
+                        # find the birthdays of the siblings
+                        siblings = []
+                        for sibling in fam.children:
+                            if sibling != child:
+                                for indi2 in individuals:
+                                    if indi2.id == sibling:
+                                        siblings.append(indi2.birthday)
+                        # if the birthdays of the siblings are the same, print an error
+                        for sibling in siblings:
+                            if sibling == childBirth:
+                                print("ERROR: FAMILY: US18: " + fam.id + ": Sibling " + sibling + " born " + sibling + " married to child " + child + " born " + childBirth)
+    
     # US23 Unique name and birth date (Max) 
     # for each individual, make sure that everyone has a unique name
     for indi in individuals:
         for indi2 in individuals:
             if indi.name == indi2.name and indi.id != indi2.id:
                 print("ERROR: INDIVIDUAL: US23: " + indi.id + ": " + indi.name + ": is the same name as " + indi2.id + ": " + indi2.name)
-
-    # US04 Marriage before divorce (Max)
-    # for each family, make sure that the date of marriage is before the date of divorce
-    for fam in mergedFamilies:
-        if fam.married != "N/A" and fam.divorced != "N/A":
-            if datetime.datetime.strptime(fam.married, "%Y-%m-%d") > datetime.datetime.strptime(fam.divorced, "%Y-%m-%d"):
-                print("ERROR: FAMILY: US04: " + fam.id + ": Marriage occurs after divorce")
-
-    # US23 Unique name and birth date (Max) 
-    # for each individual, make sure that everyone has a unique name
-    for indi in individuals:
-        for indi2 in individuals:
-            if indi.name == indi2.name and indi.id != indi2.id:
-                print("ERROR: INDIVIDUAL: US23: " + indi.id + ": " + indi.name + ": is the same name as " + indi2.id + ": " + indi2.name)
-
-    # US11 No Bigamy (Irakli)
-    # Marriage should not occur during marriage to another spouse
-    indis = {}
-    for fam in mergedFamilies:
-        if fam.wifeId in indis or fam.husbandId in indis:
-            print('bigamy')
-        else :
-            indis[fam.wifeId] = 1
-            indis[fam.husbandId] = 1
-
         # US15 Fewer than 15 siblings (Irakli)
         # There should be fewere than 15 siblings in a family
         if len(fam.children) >= 15:
             print("too many siblings")
+
+    # US24 Unique families by spouses
+    # No more than one family with the same spouses by name and the same marriage date should appear in a GEDCOM file
+    for fam in mergedFamilies:
+        for fam2 in mergedFamilies:
+            if fam.married == fam2.married and fam.husband_id == fam2.husband_id and fam.wife_id == fam2.wife_id and fam.id != fam2.id:
+                print("ERROR: FAMILY: US24: " + fam.id + ": " + fam.married + ": " + fam.husband_id + " and " + fam.wife_id + ": are the same family")
+
 
     return individuals, mergedFamilies
 
