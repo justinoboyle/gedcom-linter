@@ -138,6 +138,24 @@ class TestGEDCOM(unittest.TestCase):
         ''' Check if given list contains any duplicates '''
         return self.assertEqual(len(individuals), len(set(individuals)))
 
+    def test_US11(self):
+        '''Check if someone is married to more than 1 person'''
+        indis = {}
+        for fam in families:
+            if fam.wifeId in indis or fam.husbandId in indis:
+                return False
+            else:
+                indis[fam.wifeId] = 1
+                indis[fam.husbandId] = 1
+        return True
+    
+    def test_US15(self):
+        '''Verifies families have less than 15 siblings'''
+        for fam in families:
+            if len(fam.children) >= 15:
+                return False
+        return True
+
 # required unittest boilerplate
 if __name__ == '__main__':
     unittest.main()
