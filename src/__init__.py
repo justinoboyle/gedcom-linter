@@ -5,6 +5,9 @@ import datetime
 
 tagNames = []
 
+def dateFromString(date):
+    return datetime.datetime.strptime(date, '%Y-%m-%d')
+
 with open(os.path.realpath(__file__+ "/..") + '/tags.csv', newline='') as csvfile:
     reader = csv.reader(csvfile, delimiter=',')
     next(csvfile)
@@ -76,7 +79,7 @@ class Individual:
         if self.birthday == "N/A" or self.death == "N/A":
             pass
         else:
-            if datetime.datetime.strptime(self.birthday, '%Y-%m-%d') > datetime.datetime.strptime(self.death, '%Y-%m-%d'):
+            if dateFromString(self.birthday) > dateFromString(self.death):
                 raise Exception("Birthday must be before death!")
 
     def setBirthday(self, birthday):
@@ -112,7 +115,7 @@ class Family:
         self.husbandName = husband.name
 
     def addChild(self, child):
-        if datetime.datetime.strptime(self.married, "%Y-%m-%d") > datetime.datetime.strptime(child.birthday, "%Y-%m-%d"):
+        if dateFromString(self.married) > dateFromString(child.birthday):
             raise Exception("Child can't be born before parents were married!")
             
         # get last name of husbandName
