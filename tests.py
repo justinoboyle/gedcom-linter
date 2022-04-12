@@ -37,12 +37,12 @@ class TestGEDCOM(unittest.TestCase):
 
     # US04 - Marriage before divorce
     # Marriage should occur before divorce of spouses (if divorce is listed)
-    def test_US04(self):    
+    def test_US04(self):
         ''' Check if marriage occurs before divorce '''
         for family in families:
             if family.divorced != None:
                 self.assertTrue(family.married <= family.divorced)
-
+    
     # US05 - Marriage before death
     # Marriage should occur before death
     def test_US05(self):
