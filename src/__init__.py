@@ -2,8 +2,14 @@ import fileinput
 import csv
 import os
 import datetime
+import sys
+
+from printer import printer
 
 tagNames = []
+
+def dateFromString(date):
+    return datetime.datetime.strptime(date, '%Y-%m-%d')
 
 with open(os.path.realpath(__file__+ "/..") + '/tags.csv', newline='') as csvfile:
     reader = csv.reader(csvfile, delimiter=',')
@@ -76,7 +82,7 @@ class Individual:
         if self.birthday == "N/A" or self.death == "N/A":
             pass
         else:
-            if datetime.datetime.strptime(self.birthday, '%Y-%m-%d') > datetime.datetime.strptime(self.death, '%Y-%m-%d'):
+            if dateFromString(self.birthday) > dateFromString(self.death):
                 raise Exception("Birthday must be before death!")
 
     def setBirthday(self, birthday):
@@ -112,7 +118,7 @@ class Family:
         self.husbandName = husband.name
 
     def addChild(self, child):
-        if datetime.datetime.strptime(self.married, "%Y-%m-%d") > datetime.datetime.strptime(child.birthday, "%Y-%m-%d"):
+        if dateFromString(self.married) > dateFromString(child.birthday):
             raise Exception("Child can't be born before parents were married!")
             
         # get last name of husbandName
@@ -369,21 +375,3 @@ def runParser(lines):
 
     return individuals, mergedFamilies
 
-def printer(individuals, families):
-    # create a table of individuals and families using ljust to create whitespace and keep table aligned
-    # 'ID', 'Name', 'Gender', 'Birthday', 'Age', 'Alive', 'Death', 'Child', 'Spouse'
-    print("INDIVIDUALS")
-    print("ID".ljust(6), "Name".ljust(15), "Gender".ljust(7), "Birthday".ljust(15), "Age".ljust(4), "Alive".ljust(7), \
-        "Death".ljust(15), "Children".ljust(15), "Spouse".ljust(15))
-
-    for indi in individuals:
-        print(str(indi.id).ljust(6), str(indi.name).ljust(15), str(indi.sex).ljust(7), str(indi.birthday).ljust(15), \
-            str(indi.age).ljust(4), str(indi.isAlive).ljust(7), str(indi.death).ljust(15), str(indi.children).ljust(15), str(indi.spouse).ljust(15))
-
-    # do the same for families with columns 'ID', 'Married', 'Divorced', 'Husband ID', 'Husband Name', 'Wife ID', 'Wife Name', 'Children'
-    print("\nFAMILIES")   
-    print("ID".ljust(6), "Married".ljust(15), "Divorced".ljust(15), "Husband ID".ljust(15), "Husband Name".ljust(15), \
-        "Wife ID".ljust(15), "Wife Name".ljust(15), "Children".ljust(15))
-    for fam in families:
-        print(str(fam.id).ljust(6), str(fam.married).ljust(15), str(fam.divorced).ljust(15), str(fam.husbandId).ljust(15), \
-            str(fam.husbandName).ljust(15), str(fam.wifeId).ljust(15), str(fam.wifeName).ljust(15), str(fam.children).ljust(15))
