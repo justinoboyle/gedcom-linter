@@ -131,7 +131,26 @@ class Family:
         else:
             raise Exception("Last name of husband and child must match!")
 
-    
+    # US11 No Bigamy (Irakli)
+    # Marriage should not occur during marriage to another spouse
+    def isBigamy(families):
+        indis = {}
+        for fam in families:
+            if fam.wifeId in indis or fam.husbandId in indis:
+                raise Exception("Bigamy found in family id " + fam.id)
+            else:
+                indis[fam.wifeId] = 1
+                indis[fam.husbandId] = 1
+        return False
+        
+    # US15 Fewer than 15 siblings (Irakli)
+    # There should be fewer than 15 siblings in a family
+    def tooManySiblings(families):
+        for fam in families:
+            if len(fam.children) >= 15:
+                raise Exception("Too many siblings in family id " + fam.id)
+        return True
+
     def __str__(self):
         return self.id
     
@@ -347,20 +366,12 @@ def runParser(lines):
             if indi.name == indi2.name and indi.id != indi2.id:
                 print("ERROR: INDIVIDUAL: US23: " + indi.id + ": " + indi.name + ": is the same name as " + indi2.id + ": " + indi2.name)
 
-    # US11 No Bigamy (Irakli)
-    # Marriage should not occur during marriage to another spouse
-    indis = {}
-    for fam in mergedFamilies:
-        if fam.wifeId in indis or fam.husbandId in indis:
-            print('bigamy')
-        else :
-            indis[fam.wifeId] = 1
-            indis[fam.husbandId] = 1
-
-        # US15 Fewer than 15 siblings (Irakli)
-        # There should be fewere than 15 siblings in a family
-        if len(fam.children) >= 15:
-            print("too many siblings")
+    
+    try:
+        isBigamy(mergedFamilies)
+        tooManySiblings(mergedFamilies)
+    except Exception as e:
+        print(e)
 
     return individuals, mergedFamilies
 
