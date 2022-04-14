@@ -140,21 +140,96 @@ class TestGEDCOM(unittest.TestCase):
 
     def test_US11(self):
         '''Check if someone is married to more than 1 person'''
-        indis = {}
-        for fam in families:
-            if fam.wifeId in indis or fam.husbandId in indis:
-                return False
-            else:
-                indis[fam.wifeId] = 1
-                indis[fam.husbandId] = 1
-        return True
+        failed = False
+        families = []
+        try:
+            family1 = Family('@FAM1', 4)
+            family2 = Family('@FAM2', 4)
+            member1 = Individual('@TEST1', 4)
+            member2 = Individual('@TEST2', 4)
+            member3 = Individual('@TEST3', 4)
+            family1.husbandId = member1.id
+            family1.wifeId = member2.id
+            family2.husbandId = member1.id
+            family2.wifeId = member3.id
+
+            families.append(family1)
+            families.append(family2)
+            
+            Family.isBigamy(families)
+        except:
+            failed = True
+        self.assertTrue(failed)
+
     
+    def constructFamily(self, siblings):
+        '''helper function for US15 tests'''
+        family = Family('@FAM', 5)
+        for i in range(0,siblings):
+                member = Individual('@TEST' + i, i)
+                member.name = "John Doe"
+                family.addChild(member)
+        return family
     def test_US15(self):
+        '''Verifies function will throw with more than 15 siblings'''
+        failed = False
+        families = []
+        try:
+            families.append(self.constructFamily(16))
+            Family.tooManySiblings(families)
+        except:
+            failed = True
+        self.assertTrue(failed)
+    def test_US15_1(self):
         '''Verifies families have less than 15 siblings'''
-        for fam in families:
-            if len(fam.children) >= 15:
-                return False
-        return True
+        failed = False
+        families = []
+        try:
+            families.append(self.constructFamily(3))
+            Family.tooManySiblings(families)
+        except:
+            failed = True
+        self.assertFalse(failed)
+    def test_US15_2(self):
+        '''Verifies families have less than 15 siblings'''
+        failed = False
+        families = []
+        try:
+            families.append(self.constructFamily(7))
+            Family.tooManySiblings(families)
+        except:
+            failed = True
+        self.assertFalse(failed)
+    def test_US15_3(self):
+        '''Verifies families have less than 15 siblings'''
+        failed = False
+        families = []
+        try:
+            families.append(self.constructFamily(14))
+            Family.tooManySiblings(families)
+        except:
+            failed = True
+        self.assertFalse(failed)
+    def test_US15_3(self):
+        '''Verifies families have less than 15 siblings'''
+        failed = False
+        families = []
+        try:
+            families.append(self.constructFamily(1))
+            Family.tooManySiblings(families)
+        except:
+            failed = True
+        self.assertFalse(failed)
+    def test_US15_3(self):
+        '''Verifies families have less than 15 siblings'''
+        failed = False
+        families = []
+        try:
+            families.append(self.constructFamily(10))
+            Family.tooManySiblings(families)
+        except:
+            failed = True
+        self.assertFalse(failed)
 
 # required unittest boilerplate
 if __name__ == '__main__':
