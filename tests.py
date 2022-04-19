@@ -33,6 +33,18 @@ class TestGEDCOM(unittest.TestCase):
         except:
             failed = True
         self.assertTrue(failed)
+    
+    # US19 - First cousins should not marry 
+    # First Cousins should not be married to each other
+    def test_US07(self):
+        ''' It should fail when first cousins are married to each other '''
+        failed = False
+        try:
+            Individual('@TEST', 5).setName('James')
+            Individual('@test',6).setBrother('James')
+        except:
+            failed = True
+        self.assertTrue(failed)
 
     # US01 - Dates before current date
     # Dates should come before current date
@@ -89,6 +101,12 @@ class TestGEDCOM(unittest.TestCase):
     # US23 - Unique Name and Birth Date
     # All individuals should have a unique name and birth date
     def test_US23(self):
+        ''' Check if given list contains any duplicates '''
+        return self.assertEqual(len(individuals), len(set(individuals)))
+    
+    # US25 - Unique first Name in family
+    # All individuals should have a unique name and birth date
+    def test_US25(self):
         ''' Check if given list contains any duplicates '''
         return self.assertEqual(len(individuals), len(set(individuals)))
 

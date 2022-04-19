@@ -296,6 +296,13 @@ def runParser(lines):
         if fam.married != "N/A" and fam.divorced != "N/A":
             if datetime.datetime.strptime(fam.married, "%Y-%m-%d") > datetime.datetime.strptime(fam.divorced, "%Y-%m-%d"):
                 print("ERROR: FAMILY: US04: " + fam.id + ": Marriage occurs after divorce")
+    
+    # US19 First cousins should not marry (Josh)
+    for indi in individuals:
+        for indi2 in individuals:
+            if indi.name == indi2.brother:
+                if indi.children == indi.married:
+                    print("Error: First cousins should not be married")
 
 
     # US23 Unique name and birth date (Max) 
@@ -319,6 +326,13 @@ def runParser(lines):
             if indi.name == indi2.name and indi.id != indi2.id:
                 print("ERROR: INDIVIDUAL: US23: " + indi.id + ": " + indi.name + ": is the same name as " + indi2.id + ": " + indi2.name)
 
+     # US25 Unique first name in family (josh)
+    # for each individual, make sure that everyone has a unique name
+    for indi in indivduals:
+        for indi2 in individuals:
+            if indi.name == indi2.name:
+                print("ERROR: INDIVIDUAL: US23: " + indi.name + ": is the same name as " + indi2.name)
+    
     return individuals, mergedFamilies
 
 
