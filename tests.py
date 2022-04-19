@@ -12,14 +12,13 @@ class TestGEDCOM(unittest.TestCase):
     # US01 - Dates before current date
     # Dates should come before current date
     def test_US01(self):
-        ''' It should fail when a date occurs after current date '''
-        failed = False
-        try:
-            individual = Individual('@TEST', 5)
-            individual.setBirthday(datetime.datetime(2025, 1, 1))
-        except:
-            failed = True
-        self.assertTrue(failed)
+        '''Verifies birthdays occur before current date'''
+        for ind in individuals:
+            # convert ind.birthday string to datetime.datetime
+            ind.birthday = datetime.datetime.strptime(ind.birthday, '%Y-%m-%d')
+            if ind.birthday > datetime.datetime.now():
+                return False
+        return True
 
 
     # US03 - Birth Before Death 
@@ -126,6 +125,25 @@ class TestGEDCOM(unittest.TestCase):
             failed = True
         self.assertTrue(failed)
 
+    # US18 - Siblings should not marry (Max Sprint 3)
+    # Siblings should not marry
+    def test_US18(self):
+        ''' Check if given list contains any duplicates '''
+        failed = False
+        try:
+            person1 = Individual('@TEST1', 5)
+            person1.name = "Dave Smith"
+
+            person2 = Individual('@TEST2', 4)
+            person2.name = "John Hunt"
+
+            family = Family('@FAM1')
+            family.addHusband(person1)
+            family.addChild(person2)
+        except:
+            failed = True
+        self.assertTrue(failed)
+
     # US22 - Unique IDs
     # All individual IDs should be unique and all family IDs should be unique
     def test_US22(self):
@@ -138,6 +156,68 @@ class TestGEDCOM(unittest.TestCase):
         ''' Check if given list contains any duplicates '''
         return self.assertEqual(len(individuals), len(set(individuals)))
 
+        # US24 - Unique Family by spouses (Max Sprint 3)
+    # A family should only have one family with the same spouses by name and marriage date
+    def test_US24(self):
+        # create two families that fail the test
+        family1 = Family('@FAM1')
+        family1.married = "2021-01-01"
+        family1.husbandId = '@HUSB1'
+        family1.wifeId = '@WIFE1'
+
+        family2 = Family('@FAM2')
+        family2.married = "2021-01-01"
+        family2.husbandId = '@HUSB1'
+        family2.wifeId = '@WIFE1'
+
+        # create two families that pass the test
+        family3 = Family('@FAM3')
+        family3.married = "2021-01-01"
+        family3.husbandId = '@HUSB1'
+        family3.wifeId = '@WIFE2'
+
+        family4 = Family('@FAM4')
+        family4.married = "2021-01-01"
+        family4.husbandId = '@HUSB2'
+        family4.wifeId = '@WIFE2'
+
+        # create two individuals that fail the test
+        individual1 = Individual('@HUSB1', 5)
+        individual1.name = "Dave Smith"
+
+        individual2 = Individual('@WIFE1', 4)
+        individual2.name = "John Hunt"
+
+        # create two individuals that pass the test
+        individual3 = Individual('@HUSB2', 5)
+        individual3.name = "Dave Smith"
+
+        individual4 = Individual('@WIFE2', 4)
+        individual4.name = "John Hunt"
+
+        # add the individuals to the families
+        family1.addHusband(individual1)
+        family1.wifeId = '@WIFE1'
+
+        family2.addHusband(individual1)
+        family2.wifeId = '@WIFE1'
+
+        family3.addHusband(individual3)
+        family3.wifeId = '@WIFE2'
+
+        family4.addHusband(individual3)
+        family4.wifeId = '@WIFE2'
+
+        # add the families to the list
+        families.append(family1)
+        families.append(family2)
+        families.append(family3)
+        families.append(family4)
+
+        # check if the families are unique
+        self.assertEqual(len(families), len(set(families)))
+
+        
     def test_US11(self):
         '''Check if someone is married to more than 1 person'''
         indis = {}
