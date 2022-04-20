@@ -221,7 +221,98 @@ class TestGEDCOM(unittest.TestCase):
             failed = True
         self.assertTrue(failed)
 
-    # US19 ??
+    # US19 - First cousins should not marry
+    # First cousins should not marry one another
+    def test_US19(self):
+        ''' it should fail if a first cousin marries another '''
+        prepareTest()
+        failed = False
+        try:
+            # First level Pat and Anne have 2 kids: John and Mary
+            family1 = Family('@FAM1', 1)
+            family1.setMarried("2021-01-01")
+
+            patrick = Individual('@PATRICK', 4)
+            patrick.setName("Patrick")
+            family1.setHusband(patrick)
+
+            anne = Individual('@ANNE', 4)
+            anne.setName("Anne")
+            family1.setWife(anne)
+
+            patrick.setSpouse(anne)
+            anne.setSpouse(patrick)
+
+            # Make john and mary
+
+            john = Individual('@JOHN', 4)
+            john.setName("John")
+            family1.addChild(john)
+
+            mary = Individual('@MARY', 4)
+            mary.setName("Mary")
+            family1.addChild(mary)
+
+            # John marries Stacey (new person)
+            family2 = Family('@FAM2', 5)
+            family2.setMarried("2021-01-01")
+
+            stacey = Individual('@STACEY', 5)
+            stacey.setName("Stacey")
+
+            family2.setHusband(john)
+            family2.setWife(stacey)
+
+            # They have a kid named Bridget
+            bridget = Individual('@BRIDGET', 6)
+            bridget.setName("Bridget")
+            family2.addChild(bridget)
+
+            # Mary marries Kieran (new person)
+            family3 = Family('@FAM3', 5)
+            family3.setMarried("2021-01-01")
+
+            kieran = Individual('@KIERAN', 5)
+            kieran.setName("Kieran")
+
+            family3.setWife(mary)
+            family3.setHusband(kieran)
+
+            # They have a kid named Dave
+            dave = Individual('@DAVE', 6)
+            dave.setName("Dave")
+            family3.addChild(dave)
+
+            # Bridget tries to marry dave
+            family4 = Family('@FAM4', 5)
+            family4.setMarried("2021-01-01")
+
+            family4.setWife(bridget)
+            family4.setHusband(dave)
+
+            # The post check should fail
+            people = [
+                patrick,
+                anne,
+                john,
+                mary,
+                stacey,
+                bridget,
+                kieran,
+                dave
+            ]
+
+            families = [
+                family1,
+                family2,
+                family3,
+                family4
+            ]
+
+            postvalidate(people, families)
+
+        except:
+            failed = True
 
     # US20 (Irakli)
     # Aunts and Uncles should not marry their nephews or nieces
@@ -328,6 +419,8 @@ class TestGEDCOM(unittest.TestCase):
         except:
             failed = True
         self.assertTrue(failed)
+
+    # US27 ??
 
 # required unittest boilerplate
 if __name__ == '__main__':
