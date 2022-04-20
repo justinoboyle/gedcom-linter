@@ -2,8 +2,14 @@ import fileinput
 import csv
 import os
 import datetime
+import sys
+
+from printer import printer
 
 tagNames = []
+
+def dateFromString(date):
+    return datetime.datetime.strptime(date, '%Y-%m-%d')
 
 with open(os.path.realpath(__file__+ "/..") + '/tags.csv', newline='') as csvfile:
     reader = csv.reader(csvfile, delimiter=',')
@@ -76,7 +82,7 @@ class Individual:
         if self.birthday == "N/A" or self.death == "N/A":
             pass
         else:
-            if datetime.datetime.strptime(self.birthday, '%Y-%m-%d') > datetime.datetime.strptime(self.death, '%Y-%m-%d'):
+            if dateFromString(self.birthday) > dateFromString(self.death):
                 raise Exception("Birthday must be before death!")
 
     def setBirthday(self, birthday):
@@ -86,6 +92,22 @@ class Individual:
     def setDeath(self, death):
         self.death = death
         self.validateBirthDeath()
+    
+    # US02 (Irakli)
+    # Birth should occur before marriage of an individual
+    def checkMarriage(self):
+        '''verify that birth comes before marriage'''
+        marriage = self.family.married
+        if datetime.datetime.strptime(self.birthday, '%Y-%m-%d') < datetime.datetime.strptime(marriage, '%Y-%m-%d'):
+            raise Exception("Birthday must be before marriage!")
+
+    # US06 (Irakli)
+    # Divorce can only occur before death of both spouses
+    def checkDivorce(self):
+        '''verify that divorce comes before death'''
+        divorce = self.family.divorced
+        if datetime.datetime.strptime(self.death, '%Y-%m-%d') < datetime.datetime.strptime(divorce, '%Y-%m-%d'):
+            raise Exception("Divorce must be before death!")
 
 
     def __str__(self):
@@ -112,7 +134,7 @@ class Family:
         self.husbandName = husband.name
 
     def addChild(self, child):
-        if datetime.datetime.strptime(self.married, "%Y-%m-%d") > datetime.datetime.strptime(child.birthday, "%Y-%m-%d"):
+        if dateFromString(self.married) > dateFromString(child.birthday):
             raise Exception("Child can't be born before parents were married!")
             
         # get last name of husbandName
@@ -125,7 +147,26 @@ class Family:
         else:
             raise Exception("Last name of husband and child must match!")
 
-    
+    # US11 No Bigamy (Irakli)
+    # Marriage should not occur during marriage to another spouse
+    def isBigamy(families):
+        indis = {}
+        for fam in families:
+            if fam.wifeId in indis or fam.husbandId in indis:
+                raise Exception("Bigamy found in family id " + fam.id)
+            else:
+                indis[fam.wifeId] = 1
+                indis[fam.husbandId] = 1
+        return False
+        
+    # US15 Fewer than 15 siblings (Irakli)
+    # There should be fewer than 15 siblings in a family
+    def tooManySiblings(families):
+        for fam in families:
+            if len(fam.children) >= 15:
+                raise Exception("Too many siblings in family id " + fam.id)
+        return True
+
     def __str__(self):
         return self.id
     
@@ -358,20 +399,31 @@ def runParser(lines):
         for indi2 in individuals:
             if indi.name == indi2.name and indi.id != indi2.id:
                 print("ERROR: INDIVIDUAL: US23: " + indi.id + ": " + indi.name + ": is the same name as " + indi2.id + ": " + indi2.name)
-        # US15 Fewer than 15 siblings (Irakli)
-        # There should be fewere than 15 siblings in a family
-        if len(fam.children) >= 15:
-            print("too many siblings")
 
     # US24 Unique families by spouses
     # No more than one family with the same spouses by name and the same marriage date should appear in a GEDCOM file
     for fam in mergedFamilies:
+      # US15 Fewer than 15 siblings (Irakli)
+      # There should be fewere than 15 siblings in a family
+        if len(fam.children) >= 15:
+            print("too many siblings")
         for fam2 in mergedFamilies:
             if fam.married == fam2.married and fam.husband_id == fam2.husband_id and fam.wife_id == fam2.wife_id and fam.id != fam2.id:
                 print("ERROR: FAMILY: US24: " + fam.id + ": " + fam.married + ": " + fam.husband_id + " and " + fam.wife_id + ": are the same family")
 
 
     return individuals, mergedFamilies
+
+
+def checkConsistency(individual, family):
+    '''verifies that individual info is consistent with family info'''
+    indiID = individual.id
+    if indiID == family.husbandId or indiID == family.wifeId:
+        return True
+    for child in family.children:
+        if indiID == child.id:
+            return True
+    raise Exception("individual info is inconsistent with family info!")
 
 def printer(individuals, families):
     # create a table of individuals and families using ljust to create whitespace and keep table aligned
