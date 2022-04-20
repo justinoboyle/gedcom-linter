@@ -1,30 +1,52 @@
 import unittest
 from src import * # import our project's source code
 
-# Data is piped in from run-tests shell script to stdin
+setFailMode(True)
 
-# run it on the input 
-lines = runLinter()
-individuals, families = runParser(lines)
+def prepareTest():
+    flushIDBuffer()
 
-# run tests
+
+# UNIT tests -- these unit tests run on small data sets
 class TestGEDCOM(unittest.TestCase):
     # US01 - Dates before current date
     # Dates should come before current date
     def test_US01(self):
-        '''Verifies birthdays occur before current date'''
-        for ind in individuals:
-            # convert ind.birthday string to datetime.datetime
-            ind.birthday = datetime.datetime.strptime(ind.birthday, '%Y-%m-%d')
-            if ind.birthday > datetime.datetime.now():
-                return False
-        return True
+        ''' it should fail if birth is after the current date '''
+        prepareTest()
+        
+        failed = False
+        try:
+            individual = Individual('@TEST01', 2)
+            individual.setBirthday(datetime.datetime(9999, 1, 1))
+        except:
+            failed = True
+        self.assertTrue(failed)
+    
+    # US02 (Irakli)
+    # Birth should occur before marriage of an individual
+    def test_US02(self):
+        ''' it should fail if birth is after marriage'''
+        prepareTest()
+        failed = False
+        try:
+            family = Family('@FAM1', 1)
+            family.married = "2021-01-01"
+
+            member1 = Individual('@TEST1', 4)
+            member1.birthday = "2021-01-02"
+
+            family.addHusband(member1)
+        except:
+            failed = True
+        self.assertTrue(failed)
 
 
     # US03 - Birth Before Death 
     # All birthdays should be before deaths
     def test_US03(self):
-        ''' It should fail if birthday is after death  '''
+        ''' it should fail if birthday is after death  '''
+        prepareTest()
         failed = False
         try:
             individual = Individual('@TEST', 5)
@@ -37,15 +59,22 @@ class TestGEDCOM(unittest.TestCase):
     # US04 - Marriage before divorce
     # Marriage should occur before divorce of spouses (if divorce is listed)
     def test_US04(self):
-        ''' Check if marriage occurs before divorce '''
-        for family in families:
-            if family.divorced != None:
-                self.assertTrue(family.married <= family.divorced)
+        ''' it should fail if marriage is before divorce '''
+        prepareTest()
+        failed = False
+        try:
+            family = Family('@FAM4', 1)
+            family.setMarried("2021-01-01")
+            family.setDivorced("2021-01-02")
+        except:
+            failed = True
+        self.assertTrue(failed)
     
     # US05 - Marriage before death
     # Marriage should occur before death
     def test_US05(self):
-        ''' It should fail when an individual marries after their deathdate '''
+        ''' it should fail if marriage is after death '''
+        prepareTest()
         failed = False
         try:
             individual = Individual('@TEST', 5)
@@ -55,11 +84,30 @@ class TestGEDCOM(unittest.TestCase):
             failed = True
         self.assertTrue(failed)
 
+    # US06 (Irakli)
+    # Divorce can only occur before death of both spouses
+    def test_US06(self):
+        ''' Checks if divorce occurs after death of a spouse'''
+        prepareTest()
+        failed = False
+        try:
+            family = Family('@FAM1', 1)
+            family.married = "2021-01-02"
+
+            member1 = Individual('@TEST1', 4)
+            member1.death = "2021-01-01"
+
+            family.addHusband(member1)
+        except:
+            failed = True
+        self.assertTrue(failed)
+
 
     # US07 - Less then 150 years old
     # All users have to be less than 150 years old
     def test_US07(self):
         ''' It should fail when an individual is older than 150 years '''
+        prepareTest()
         failed = False
         try:
             Individual('@TEST', 5).setAge(151)
@@ -71,6 +119,7 @@ class TestGEDCOM(unittest.TestCase):
     # Children should be born after marriage of parents
     def test_US08(self):
         ''' It should fail when a child is born after parents are married '''
+        prepareTest()
         failed = False
         try:
             family = Family('@FAM1', 1)
@@ -85,47 +134,17 @@ class TestGEDCOM(unittest.TestCase):
         except:
             failed = True
         self.assertTrue(failed)
-    
-    # US02 (Irakli)
-    # Birth should occur before marriage of an individual
-    def test_US02(self):
-        ''' Checks if birth is after marriage'''
-        failed = False
-        try:
-            family = Family('@FAM1', 1)
-            family.married = "2021-01-01"
 
-            member1 = Individual('@TEST1', 4)
-            member1.birthday = "2021-01-02"
+    # US09 ??
 
-            family.addHusband(member1)
-        except:
-            failed = True
-        self.asserTrue(failed)
-
-    # US06 (Irakli)
-    # Divorce can only occur before death of both spouses
-    def test_US06(self):
-        ''' Checks if divorce occurs after death of a spouse'''
-        failed = False
-        try:
-            family = Family('@FAM1', 1)
-            family.married = "2021-01-02"
-
-            member1 = Individual('@TEST1', 4)
-            member1.death = "2021-01-01"
-
-            family.addHusband(member1)
-        except:
-            failed = True
-        self.asserTrue(failed)
+    # US10 ??
 
     # US11 (Irakli)
     # Marriage should not occur during marriage to another spouse
     def test_US11(self):
         '''Checks if someone is married to more than 1 person'''
+        prepareTest()
         failed = False
-        families = []
         try:
             family1 = Family('@FAM1', 4)
             family2 = Family('@FAM2', 4)
@@ -136,19 +155,21 @@ class TestGEDCOM(unittest.TestCase):
             family1.wifeId = member2.id
             family2.husbandId = member1.id
             family2.wifeId = member3.id
-
-            families.append(family1)
-            families.append(family2)
-            
-            Family.isBigamy(families)
         except:
             failed = True
         self.assertTrue(failed)
+
+    # US12 ??
+
+    # US13 ??
+
+    # US14 ??
     
     # US15 (Irakli)
     # There should be fewer than 15 siblings in a family
     def test_US15(self):
         '''Verifies function will throw with more than 15 siblings'''
+        prepareTest()
         failed = False
         families = []
         try:
@@ -157,12 +178,57 @@ class TestGEDCOM(unittest.TestCase):
         except:
             failed = True
         self.assertTrue(failed)
+     
+    # US16 - Male last names
+    # All male members of a family should have the same last name
+    def test_US16(self):
+        ''' It should fail if you create a man with a different last name in a family '''
+        prepareTest()
+        failed = False
+        try:
+            person1 = Individual('@TEST1', 5)
+            person1.name = "Dave Smith"
+
+            person2 = Individual('@TEST2', 4)
+            person2.name = "John Hunt"
+
+            family = Family('@FAM1', 5)
+            family.addHusband(person1)
+            family.addChild(person2)
+        except:
+            failed = True
+        self.assertTrue(failed)
+
+    # US17 ??
+
+    # US18 - Siblings should not marry (Max Sprint 3)
+    # Siblings should not marry
+    def test_US18(self):
+        ''' Check if given list contains any duplicates '''
+        prepareTest()
+        failed = False
+        try:
+            person1 = Individual('@TEST1', 5)
+            person1.name = "Dave Smith"
+
+            person2 = Individual('@TEST2', 4)
+            person2.name = "John Hunt"
+
+            family = Family('@FAM1')
+            family.addHusband(person1)
+            family.addChild(person2)
+        except:
+            failed = True
+        self.assertTrue(failed)
+
+    # US19 ??
 
     # US20 (Irakli)
     # Aunts and Uncles should not marry their nephews or nieces
     
     # def test_US20(self):
     #     ''' Checks if aunt or uncle is married to nephew or niece'''
+        prepareTest()
     #     failed = False
     #     try:
     #         aunt = Individual('@TEST1', 1)
@@ -179,12 +245,73 @@ class TestGEDCOM(unittest.TestCase):
             
     #     except:
     #         failed = True
-    #     self.asserTrue(failed)
-    
+    #     self.assertTrue(failed)
+
+    # US22 - Unique IDs
+    # All individual IDs should be unique and all family IDs should be unique
+    def test_US22(self):
+        ''' it should throw an error if there are duplicate IDs '''
+        prepareTest()
+        failed = False
+        try:
+            person1 = Individual('@TEST1', 5)
+            person2 = Individual('@TEST1', 5)
+        except:
+            failed = True
+        self.assertTrue(failed)
+
+
+    # US23 - Unique Name and Birth Date
+    # No more than one individual with the same name and birth date should appear in a GEDCOM file
+    def test_US23(self):
+        ''' it should throw an error if the name and date are not unique '''
+        prepareTest()
+        failed = False
+        try:
+            person1 = Individual('@TEST1', 5)
+            person1.name = "Dave Smith"
+            person1.setBirthday("2021-01-01")
+
+            person2 = Individual('@TEST2', 5)
+            person2.name = "Dave Smith"
+            person1.setBirthday("2021-01-01")
+
+        except:
+            failed = True
+        self.assertTrue(failed)
+
+    # US24 - Unique families by spouses
+    # No more than one family with the same spouses by name and the same marriage date should appear in a GEDCOM file
+    def test_US24(self):
+        prepareTest()
+        failed = False
+        try:
+            families = []
+            family1 = Family('@FAM1', 1)
+            family2 = Family('@FAM2', 1)
+
+            husband = Individual('@TEST1', 5)
+            wife = Individual('@TEST1', 5)
+            
+            family1.setHusband(husband)
+            family1.setWife(wife)
+
+            family2.setHusband(husband)
+            family2.setWife(wife)
+
+            postvalidate([], families)
+
+        except:
+            failed = True
+        self.assertTrue(failed)
+
+    # US25 ???
+
     # US26 (Irakli)
     # the information in the individual and family records should be consistent
     def test_US26(self):
         '''Checks if an individual does not exist in its own family'''
+        prepareTest()
         failed = False
         try:
             person1 = Individual('@TEST1', 1)
@@ -201,136 +328,6 @@ class TestGEDCOM(unittest.TestCase):
         except:
             failed = True
         self.assertTrue(failed)
-        
-    # US16 - Male last names
-    # All male members of a family should have the same last name
-    def test_US16(self):
-        ''' It should fail if you create a man with a different last name in a family '''
-        failed = False
-        try:
-            person1 = Individual('@TEST1', 5)
-            person1.name = "Dave Smith"
-
-            person2 = Individual('@TEST2', 4)
-            person2.name = "John Hunt"
-
-            family = Family('@FAM1', 5)
-            family.addHusband(person1)
-            family.addChild(person2)
-        except:
-            failed = True
-        self.assertTrue(failed)
-
-    # US18 - Siblings should not marry (Max Sprint 3)
-    # Siblings should not marry
-    def test_US18(self):
-        ''' Check if given list contains any duplicates '''
-        failed = False
-        try:
-            person1 = Individual('@TEST1', 5)
-            person1.name = "Dave Smith"
-
-            person2 = Individual('@TEST2', 4)
-            person2.name = "John Hunt"
-
-            family = Family('@FAM1')
-            family.addHusband(person1)
-            family.addChild(person2)
-        except:
-            failed = True
-        self.assertTrue(failed)
-
-    # US22 - Unique IDs
-    # All individual IDs should be unique and all family IDs should be unique
-    def test_US22(self):
-        ''' Check if given list contains any duplicates '''
-        return self.assertEqual(len(individuals), len(set(individuals))) and self.assertEqual(len(families), len(set(families)))
-
-    # US23 - Unique Name and Birth Date
-    # All individuals should have a unique name and birth date
-    def test_US23(self):
-        ''' Check if given list contains any duplicates '''
-        return self.assertEqual(len(individuals), len(set(individuals)))
-
-    # US24 - Unique Family by spouses (Max Sprint 3)
-    # A family should only have one family with the same spouses by name and marriage date
-    def test_US24(self):
-        # create two families that fail the test
-        family1 = Family('@FAM1')
-        family1.married = "2021-01-01"
-        family1.husbandId = '@HUSB1'
-        family1.wifeId = '@WIFE1'
-
-        family2 = Family('@FAM2')
-        family2.married = "2021-01-01"
-        family2.husbandId = '@HUSB1'
-        family2.wifeId = '@WIFE1'
-
-        # create two families that pass the test
-        family3 = Family('@FAM3')
-        family3.married = "2021-01-01"
-        family3.husbandId = '@HUSB1'
-        family3.wifeId = '@WIFE2'
-
-        family4 = Family('@FAM4')
-        family4.married = "2021-01-01"
-        family4.husbandId = '@HUSB2'
-        family4.wifeId = '@WIFE2'
-
-        # create two individuals that fail the test
-        individual1 = Individual('@HUSB1', 5)
-        individual1.name = "Dave Smith"
-
-        individual2 = Individual('@WIFE1', 4)
-        individual2.name = "John Hunt"
-
-        # create two individuals that pass the test
-        individual3 = Individual('@HUSB2', 5)
-        individual3.name = "Dave Smith"
-
-        individual4 = Individual('@WIFE2', 4)
-        individual4.name = "John Hunt"
-
-        # add the individuals to the families
-        family1.addHusband(individual1)
-        family1.wifeId = '@WIFE1'
-
-        family2.addHusband(individual1)
-        family2.wifeId = '@WIFE1'
-
-        family3.addHusband(individual3)
-        family3.wifeId = '@WIFE2'
-
-        family4.addHusband(individual3)
-        family4.wifeId = '@WIFE2'
-
-        # add the families to the list
-        families.append(family1)
-        families.append(family2)
-        families.append(family3)
-        families.append(family4)
-
-        # check if the families are unique
-        self.assertEqual(len(families), len(set(families)))
-
-        
-    def test_US11(self):
-        '''Check if someone is married to more than 1 person'''
-        indis = {}
-        for fam in families:
-            if fam.wifeId in indis or fam.husbandId in indis:
-                return False
-            else:
-                indis[fam.wifeId] = 1
-                indis[fam.husbandId] = 1
-        return True
-    
-    def test_US15(self):
-        '''Verifies families have less than 15 siblings'''
-        for fam in families:
-            if len(fam.children) >= 15:
-                return False
-        return True
 
 # required unittest boilerplate
 if __name__ == '__main__':
