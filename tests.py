@@ -86,27 +86,123 @@ class TestGEDCOM(unittest.TestCase):
         except:
             failed = True
         self.assertTrue(failed)
-
-    # US11 - No bigamy
-    # Marriage should not occur during marriage to another spouse
-    def test_US11(self):
+    
+    # US02 (Irakli)
+    # Birth should occur before marriage of an individual
+    def test_US02(self):
+        ''' Checks if birth is after marriage'''
         failed = False
         try:
+            family = Family('@FAM1', 1)
+            family.married = "2021-01-01"
 
-            family1 = Family('@FAM1', 1)
-            husband1 = Individual('@HUSB1', 2)
-            husband1.name = "Dave Smith"
-            family1.married = "2021-01-01"
-            family1.setHusband(husband1)
+            member1 = Individual('@TEST1', 4)
+            member1.birthday = "2021-01-02"
 
-            family2 = Family('@FAM2', 1)
-            family2.married = "2021-01-01"
-            family2.setHusband(husband1)
+            family.addHusband(member1)
+        except:
+            failed = True
+        self.asserTrue(failed)
 
+    # US06 (Irakli)
+    # Divorce can only occur before death of both spouses
+    def test_US06(self):
+        ''' Checks if divorce occurs after death of a spouse'''
+        failed = False
+        try:
+            family = Family('@FAM1', 1)
+            family.married = "2021-01-02"
+
+            member1 = Individual('@TEST1', 4)
+            member1.death = "2021-01-01"
+
+            family.addHusband(member1)
+        except:
+            failed = True
+        self.asserTrue(failed)
+
+    # US11 (Irakli)
+    # Marriage should not occur during marriage to another spouse
+    def test_US11(self):
+        '''Checks if someone is married to more than 1 person'''
+        failed = False
+        families = []
+        try:
+            family1 = Family('@FAM1', 4)
+            family2 = Family('@FAM2', 4)
+            member1 = Individual('@TEST1', 4)
+            member2 = Individual('@TEST2', 4)
+            member3 = Individual('@TEST3', 4)
+            family1.husbandId = member1.id
+            family1.wifeId = member2.id
+            family2.husbandId = member1.id
+            family2.wifeId = member3.id
+
+            families.append(family1)
+            families.append(family2)
+            
+            Family.isBigamy(families)
+        except:
+            failed = True
+        self.assertTrue(failed)
+    
+    # US15 (Irakli)
+    # There should be fewer than 15 siblings in a family
+    def test_US15(self):
+        '''Verifies function will throw with more than 15 siblings'''
+        failed = False
+        families = []
+        try:
+            families.append(self.constructFamily(16))
+            Family.tooManySiblings(families)
         except:
             failed = True
         self.assertTrue(failed)
 
+    # US20 (Irakli)
+    # Aunts and Uncles should not marry their nephews or nieces
+    
+    # def test_US20(self):
+    #     ''' Checks if aunt or uncle is married to nephew or niece'''
+    #     failed = False
+    #     try:
+    #         aunt = Individual('@TEST1', 1)
+    #         uncle = Individual('@TEST2', 2)
+    #         niece = Individual('@TEST3', 3)
+    #         nephew = Individual('@TEST4', 4)
+
+    #         family1 = Family('@FAM1')
+    #         family1.wifeId = aunt.id
+    #         family1.husbandId = uncle.id
+
+    #         family2 = Family('@FAM2')
+    #         family2.children = [niece.id, nephew.id]
+            
+    #     except:
+    #         failed = True
+    #     self.asserTrue(failed)
+    
+    # US26 (Irakli)
+    # the information in the individual and family records should be consistent
+    def test_US26(self):
+        '''Checks if an individual does not exist in its own family'''
+        failed = False
+        try:
+            person1 = Individual('@TEST1', 1)
+            person1.name = "John Doe"
+            person2 = Individual('@TEST2', 2)
+            person2.name = "Jane Doe"
+
+            family = Family('@FAM1')
+            family.wifeId = person2.id
+
+            person1.family = family
+            person2.family = family
+            checkConsistency(person1,family)
+        except:
+            failed = True
+        self.assertTrue(failed)
+        
     # US16 - Male last names
     # All male members of a family should have the same last name
     def test_US16(self):
@@ -137,99 +233,6 @@ class TestGEDCOM(unittest.TestCase):
     def test_US23(self):
         ''' Check if given list contains any duplicates '''
         return self.assertEqual(len(individuals), len(set(individuals)))
-
-    def test_US11(self):
-        '''Check if someone is married to more than 1 person'''
-        failed = False
-        families = []
-        try:
-            family1 = Family('@FAM1', 4)
-            family2 = Family('@FAM2', 4)
-            member1 = Individual('@TEST1', 4)
-            member2 = Individual('@TEST2', 4)
-            member3 = Individual('@TEST3', 4)
-            family1.husbandId = member1.id
-            family1.wifeId = member2.id
-            family2.husbandId = member1.id
-            family2.wifeId = member3.id
-
-            families.append(family1)
-            families.append(family2)
-            
-            Family.isBigamy(families)
-        except:
-            failed = True
-        self.assertTrue(failed)
-
-    
-    def constructFamily(self, siblings):
-        '''helper function for US15 tests'''
-        family = Family('@FAM', 5)
-        for i in range(0,siblings):
-                member = Individual('@TEST' + i, i)
-                member.name = "John Doe"
-                family.addChild(member)
-        return family
-    def test_US15(self):
-        '''Verifies function will throw with more than 15 siblings'''
-        failed = False
-        families = []
-        try:
-            families.append(self.constructFamily(16))
-            Family.tooManySiblings(families)
-        except:
-            failed = True
-        self.assertTrue(failed)
-    def test_US15_1(self):
-        '''Verifies families have less than 15 siblings'''
-        failed = False
-        families = []
-        try:
-            families.append(self.constructFamily(3))
-            Family.tooManySiblings(families)
-        except:
-            failed = True
-        self.assertFalse(failed)
-    def test_US15_2(self):
-        '''Verifies families have less than 15 siblings'''
-        failed = False
-        families = []
-        try:
-            families.append(self.constructFamily(7))
-            Family.tooManySiblings(families)
-        except:
-            failed = True
-        self.assertFalse(failed)
-    def test_US15_3(self):
-        '''Verifies families have less than 15 siblings'''
-        failed = False
-        families = []
-        try:
-            families.append(self.constructFamily(14))
-            Family.tooManySiblings(families)
-        except:
-            failed = True
-        self.assertFalse(failed)
-    def test_US15_3(self):
-        '''Verifies families have less than 15 siblings'''
-        failed = False
-        families = []
-        try:
-            families.append(self.constructFamily(1))
-            Family.tooManySiblings(families)
-        except:
-            failed = True
-        self.assertFalse(failed)
-    def test_US15_3(self):
-        '''Verifies families have less than 15 siblings'''
-        failed = False
-        families = []
-        try:
-            families.append(self.constructFamily(10))
-            Family.tooManySiblings(families)
-        except:
-            failed = True
-        self.assertFalse(failed)
 
 # required unittest boilerplate
 if __name__ == '__main__':

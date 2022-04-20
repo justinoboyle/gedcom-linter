@@ -92,6 +92,22 @@ class Individual:
     def setDeath(self, death):
         self.death = death
         self.validateBirthDeath()
+    
+    # US02 (Irakli)
+    # Birth should occur before marriage of an individual
+    def checkMarriage(self):
+        '''verify that birth comes before marriage'''
+        marriage = self.family.married
+        if datetime.datetime.strptime(self.birthday, '%Y-%m-%d') < datetime.datetime.strptime(marriage, '%Y-%m-%d'):
+            raise Exception("Birthday must be before marriage!")
+
+    # US06 (Irakli)
+    # Divorce can only occur before death of both spouses
+    def checkDivorce(self):
+        '''verify that divorce comes before death'''
+        divorce = self.family.divorced
+        if datetime.datetime.strptime(self.death, '%Y-%m-%d') < datetime.datetime.strptime(divorce, '%Y-%m-%d'):
+            raise Exception("Divorce must be before death!")
 
 
     def __str__(self):
@@ -367,11 +383,42 @@ def runParser(lines):
                 print("ERROR: INDIVIDUAL: US23: " + indi.id + ": " + indi.name + ": is the same name as " + indi2.id + ": " + indi2.name)
 
     
-    try:
-        isBigamy(mergedFamilies)
-        tooManySiblings(mergedFamilies)
-    except Exception as e:
-        print(e)
+    #try:
+    #    isBigamy(mergedFamilies)
+    #    tooManySiblings(mergedFamilies)
+    #except Exception as e:
+    #    print(e)
 
     return individuals, mergedFamilies
 
+<<<<<<< Updated upstream
+=======
+def checkConsistency(individual, family):
+    '''verifies that individual info is consistent with family info'''
+    indiID = individual.id
+    if indiID == family.husbandId or indiID == family.wifeId:
+        return True
+    for child in family.children:
+        if indiID == child.id:
+            return True
+    raise Exception("individual info is inconsistent with family info!")
+
+def printer(individuals, families):
+    # create a table of individuals and families using ljust to create whitespace and keep table aligned
+    # 'ID', 'Name', 'Gender', 'Birthday', 'Age', 'Alive', 'Death', 'Child', 'Spouse'
+    print("INDIVIDUALS")
+    print("ID".ljust(6), "Name".ljust(15), "Gender".ljust(7), "Birthday".ljust(15), "Age".ljust(4), "Alive".ljust(7), \
+        "Death".ljust(15), "Children".ljust(15), "Spouse".ljust(15))
+
+    for indi in individuals:
+        print(str(indi.id).ljust(6), str(indi.name).ljust(15), str(indi.sex).ljust(7), str(indi.birthday).ljust(15), \
+            str(indi.age).ljust(4), str(indi.isAlive).ljust(7), str(indi.death).ljust(15), str(indi.children).ljust(15), str(indi.spouse).ljust(15))
+
+    # do the same for families with columns 'ID', 'Married', 'Divorced', 'Husband ID', 'Husband Name', 'Wife ID', 'Wife Name', 'Children'
+    print("\nFAMILIES")   
+    print("ID".ljust(6), "Married".ljust(15), "Divorced".ljust(15), "Husband ID".ljust(15), "Husband Name".ljust(15), \
+        "Wife ID".ljust(15), "Wife Name".ljust(15), "Children".ljust(15))
+    for fam in families:
+        print(str(fam.id).ljust(6), str(fam.married).ljust(15), str(fam.divorced).ljust(15), str(fam.husbandId).ljust(15), \
+            str(fam.husbandName).ljust(15), str(fam.wifeId).ljust(15), str(fam.wifeName).ljust(15), str(fam.children).ljust(15))
+>>>>>>> Stashed changes
