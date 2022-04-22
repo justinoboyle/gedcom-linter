@@ -370,8 +370,38 @@ def runParser(lines):
             if fam.married == fam2.married and fam.husband_id == fam2.husband_id and fam.wife_id == fam2.wife_id and fam.id != fam2.id:
                 print("ERROR: FAMILY: US24: " + fam.id + ": " + fam.married + ": " + fam.husband_id + " and " + fam.wife_id + ": are the same family")
 
+    # US31 List living single
+    # print out all living people over 30 who have never been married
+    for indi in individuals:
+        if indi.alive == "True" and indi.death == "N/A" and indi.age >= 30 and indi.spouse == "N/A":
+            print("INDIVIDUAL: US31: " + indi.id + ": " + indi.name + ": is living single")
 
-    return individuals, mergedFamilies
+    # US32 List multiple births
+    # List all people born in the last 30 days from today
+    # get the date from 30 days ago
+    today = datetime.datetime.today()
+    thirtyDaysAgo = today - datetime.timedelta(days=30)
+
+
+    for indi in individuals:
+        # if the birthday is after thirtyDaysAgo and the birthday is before today, print an error
+        if indi.alive == "True" and indi.death == "N/A" and datetime.datetime.strptime(indi.birthday, "%Y-%m-%d") > thirtyDaysAgo and datetime.datetime.strptime(indi.birthday, "%Y-%m-%d") < today:
+            print("INDIVIDUAL: US32: " + indi.id + ": " + indi.name + ": is born in the last 30 days")
+
+    # US33 List large age differences
+    # calculate age at marriage of wife and husband
+    # if the age difference is over double the age of the other spouse, print both spouses
+    for indi in individuals:
+        if indi.spouse != "N/A":
+            birthday = datetime.datetime.strptime(indi.birthday, "%Y-%m-%d")
+            spouseBirthday = datetime.datetime.strptime(indi.spouse.birthday, "%Y-%m-%d")
+            if (today - birthday).days > (today - spouseBirthday).days:
+                ageDifference = (today - birthday).days - (today - spouseBirthday).days
+            else:
+                ageDifference = (today - spouseBirthday).days - (today - birthday).days
+            if ageDifference > 2*(today - birthday).days:
+                print("INDIVIDUAL: US33: " + indi.id + ": " + indi.name + ": and " + indi.spouse.id + ": " + indi.spouse.name + ": are married with age difference of " + str(ageDifference))
+    
 
 def printer(individuals, families):
     # create a table of individuals and families using ljust to create whitespace and keep table aligned
