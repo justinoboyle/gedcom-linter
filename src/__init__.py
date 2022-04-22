@@ -471,6 +471,42 @@ def checkConsistency(individual, family):
             return True
     doError("individual info is inconsistent with family info!")
 
+def listOlderSpouses(families):
+    '''checks if someone's spouse is at least twice their own age when they married'''
+    L = []
+    for fam in families:
+        husband = fam._husbRef
+        wife = fam._wifeRef
+        husbandDiff = (datetime.datetime.strptime(fam.married, "%Y-%m-%d") - datetime.datetime.strptime(husband.birthday, "%Y-%m-%d")).days
+        wifeDiff = (datetime.datetime.strptime(fam.married, "%Y-%m-%d") - datetime.datetime.strptime(wife.birthday, "%Y-%m-%d")).days
+        if husbandDiff >= 2 * wifeDiff:
+            L.append(fam.id)
+            print(f"{husband.name} ({husband.age}) is at least twice as old as {wife.name} ({wife.age})")
+        elif wifeDiff >= 2 * husbandDiff:
+            print(f"{wife.name} ({wife.age}) is at least twice as old as {husband.name} ({husband.age})")
+            L.append(fam.id)
+    return L
+
+def listRecentBirths(individuals, currentDate=None):
+    '''returns individuals that were born in the last 30 days'''
+    L = []
+    now = datetime.datetime.today().isoformat() if currentDate is None else currentDate
+    for indi in individuals:
+        diff = (datetime.datetime.strptime(now, "%Y-%m-%d") - datetime.datetime.strptime(indi.birthday, "%Y-%m-%d")).days
+        if diff >= 0 and diff <= 30:
+            L.append(indi.name)
+    return L
+
+def listRecentDeaths(individuals, currentDate=None):
+    '''prints individuals that died in the last 30 days'''
+    L = []
+    now = datetime.datetime.today().isoformat() if currentDate is None else currentDate
+    for indi in individuals:
+        diff = (datetime.datetime.strptime(now, "%Y-%m-%d") - datetime.datetime.strptime(indi.death, "%Y-%m-%d")).days
+        if diff >= 0 and diff <= 30:
+            L.append(indi.name)
+    return L
+
 def printer(individuals, families):
     # create a table of individuals and families using ljust to create whitespace and keep table aligned
     # 'ID', 'Name', 'Gender', 'Birthday', 'Age', 'Alive', 'Death', 'Child', 'Spouse'

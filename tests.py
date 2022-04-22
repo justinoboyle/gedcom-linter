@@ -422,6 +422,108 @@ class TestGEDCOM(unittest.TestCase):
 
     # US27 ??
 
+    # US34
+    # List all couples who were married when the older spouse was 
+    # more than twice as old as the younger spouse
+    def test_US34(self):
+        '''Checks if output is all couples married when one spouse was at least twice as old'''
+        prepareTest()
+        failed = False
+    
+        family1 = Family('@FAM1', 1)
+        family2 = Family('@FAM2', 1)
+        family3 = Family('@FAM3', 1)
+
+        husband1 = Individual('@TEST1', 5)
+        husband1.name = 'John Smith'
+        husband1.setBirthday("1940-01-01")
+        wife1 = Individual('@TEST2', 5)
+        wife1.name = 'Jane Smith'
+        wife1.setBirthday("1990-01-01")
+
+        husband2 = Individual('@TEST3', 5)
+        husband2.name = "Joe Moe"
+        husband2.setBirthday("1990-01-01")
+        wife2 = Individual('@TEST4', 5)
+        wife2.name = "Jenny Moe"
+        wife2.setBirthday("1930-01-01")
+
+        husband3 = Individual('@TEST5', 5)
+        husband3.name = "Joe Schmo"
+        husband3.setBirthday("1980-01-02")
+        wife3 = Individual('@TEST6', 5)
+        wife3.name = "Jenny Schmo"
+        wife3.setBirthday("1981-01-01")
+        
+
+        family1.setHusband(husband1)
+        family1.setWife(wife1)
+        family1.married = "2010-01-01"
+
+        family2.setHusband(husband2)
+        family2.setWife(wife2)
+        family2.married = "2010-01-01"
+
+        family3.setHusband(husband3)
+        family3.setWife(wife3)
+        family3.married = "2010-01-01"
+        
+        families = [family1, family2, family3]
+        if listOlderSpouses(families) != ['FAM1', 'FAM2']:
+            failed = True
+
+        self.assertTrue(failed)
+
+    # US35
+    # List all people in a GEDCOM file who were born in the last 30 days
+    def test_US35(self):
+        '''Checks if output is all people born in last 30 days'''
+        prepareTest()
+        failed = False
+
+        person1 = Individual('@TEST1', 1)
+        person1.name = "John Doe New"
+        person1.setBirthday("2021-03-15")
+
+        person2 = Individual('@TEST2', 1)
+        person2.name = "John Boe New"
+        person2.setBirthday("2021-03-01")
+
+        person3 = Individual('@TEST2', 1)
+        person3.name = "John Coe Old"
+        person3.setBirthday("2020-01-15")
+        
+        indiList = [person1, person2, person3]
+
+        if listRecentBirths(indiList, "2021-03-30") != ["John Doe New", "John Boe New"]:
+            failed = True
+        self.assertTrue(failed)
+
+    # US36
+    # List all people in a GEDCOM file who died in the last 30 days
+    def test_US36(self):
+        '''Checks if output is all people dead in last 30 days'''
+        prepareTest()
+        failed = False
+        
+        person1 = Individual('@TEST1', 1)
+        person1.name = "John Doe New"
+        person1.setDeath("2021-03-15")
+
+        person2 = Individual('@TEST2', 1)
+        person2.name = "John Boe New"
+        person2.setDeath("2021-03-01")
+
+        person3 = Individual('@TEST2', 1)
+        person3.name = "John Coe Old"
+        person3.setDeath("2020-01-15")
+        
+        indiList = [person1, person2, person3]
+
+        if listRecentDeaths(indiList, "2021-03-30") != ["John Doe New", "John Boe New"]:
+            failed = True
+        self.assertTrue(failed)
+
 # required unittest boilerplate
 if __name__ == '__main__':
     unittest.main()
