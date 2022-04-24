@@ -430,9 +430,9 @@ class TestGEDCOM(unittest.TestCase):
         prepareTest()
         failed = False
     
-        family1 = Family('@FAM1', 1)
-        family2 = Family('@FAM2', 1)
-        family3 = Family('@FAM3', 1)
+        family1 = Family('@FAM1')
+        family2 = Family('@FAM2')
+        family3 = Family('@FAM3')
 
         husband1 = Individual('@TEST1', 5)
         husband1.name = 'John Smith'
@@ -456,16 +456,16 @@ class TestGEDCOM(unittest.TestCase):
         wife3.setBirthday("1981-01-01")
         
 
-        family1.setHusband(husband1)
-        family1.setWife(wife1)
+        family1.addHusband(husband1)
+        family1.addWife(wife1)
         family1.married = "2010-01-01"
 
-        family2.setHusband(husband2)
-        family2.setWife(wife2)
+        family2.addHusband(husband2)
+        family2.addWife(wife2)
         family2.married = "2010-01-01"
 
-        family3.setHusband(husband3)
-        family3.setWife(wife3)
+        family3.addHusband(husband3)
+        family3.addWife(wife3)
         family3.married = "2010-01-01"
         
         families = [family1, family2, family3]
