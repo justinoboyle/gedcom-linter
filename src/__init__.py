@@ -52,11 +52,20 @@ class ParsedGEDCOM:
         return str(self.level) + "|" + self.tag + "|" + ("Y" if self.valid else "N") + "|" + " ".join(self.args)
 
 errorBuffer = []
+listBuffer = []
 failMode = False
 def doError(error):
     if failMode:
         raise Exception(error)
     errorBuffer.append(error)
+
+def doListBuffer(msg):
+    global listBuffer
+    listBuffer.append(msg)
+
+def clearListBuffer():
+    global listBuffer
+    listBuffer = []
 
 def runLinter():
     # Read from standard input and return an array of ParsedGEDCOM objects
@@ -481,9 +490,9 @@ def listOlderSpouses(families):
         wifeDiff = (datetime.datetime.strptime(fam.married, "%Y-%m-%d") - datetime.datetime.strptime(wife.birthday, "%Y-%m-%d")).days
         if husbandDiff >= 2 * wifeDiff:
             L.append(fam.id)
-            print(f"{husband.name} ({husband.age}) is at least twice as old as {wife.name} ({wife.age})")
+            doListBuffer(f"{husband.name} ({husband.age}) is at least twice as old as {wife.name} ({wife.age})")
         elif wifeDiff >= 2 * husbandDiff:
-            print(f"{wife.name} ({wife.age}) is at least twice as old as {husband.name} ({husband.age})")
+            doListBuffer(f"{wife.name} ({wife.age}) is at least twice as old as {husband.name} ({husband.age})")
             L.append(fam.id)
     return L
 
@@ -525,3 +534,11 @@ def printer(individuals, families):
     for fam in families:
         print(str(fam.id).ljust(6), str(fam.married).ljust(15), str(fam.divorced).ljust(15), str(fam.husbandId).ljust(15), \
             str(fam.husbandName).ljust(15), str(fam.wifeId).ljust(15), str(fam.wifeName).ljust(15), str(fam.children).ljust(15))
+
+    # print all in listBuffer
+    for item in listBuffer:
+        print(item)
+    
+    # print all in errorBuffer
+    for item in errorBuffer:
+        print(item)

@@ -489,7 +489,7 @@ class TestGEDCOM(unittest.TestCase):
         person2.name = "John Boe New"
         person2.setBirthday("2021-03-01")
 
-        person3 = Individual('@TEST2', 1)
+        person3 = Individual('@TEST3', 1)
         person3.name = "John Coe Old"
         person3.setBirthday("2020-01-15")
         
