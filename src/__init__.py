@@ -116,7 +116,7 @@ class Individual:
         self.age = age
 
     def validateBirthDeath(self):
-        if datetime.datetime.strptime(self.birthday, '%Y-%m-%d') > datetime.datetime.now():
+        if self.birthday != "N/A" and datetime.datetime.strptime(self.birthday, '%Y-%m-%d') > datetime.datetime.now():
             doError("Birthday must be before current date! (Individual ID " + self.id + ")")
         if self.birthday == "N/A" or self.death == "N/A":
             pass
@@ -499,21 +499,23 @@ def listOlderSpouses(families):
 def listRecentBirths(individuals, currentDate=None):
     '''returns individuals that were born in the last 30 days'''
     L = []
-    now = datetime.datetime.today().isoformat() if currentDate is None else currentDate
+    now = datetime.datetime.today() if currentDate is None else currentDate
     for indi in individuals:
-        diff = (datetime.datetime.strptime(now, "%Y-%m-%d") - datetime.datetime.strptime(indi.birthday, "%Y-%m-%d")).days
-        if diff >= 0 and diff <= 30:
-            L.append(indi.name)
+        if indi.birthday != "N/A" and indi.birthday != "" and indi.birthday != None:
+            diff = (now - dateFromString(indi.birthday)).days
+            if diff >= 0 and diff <= 30:
+                L.append(indi.name)
     return L
 
 def listRecentDeaths(individuals, currentDate=None):
     '''prints individuals that died in the last 30 days'''
     L = []
-    now = datetime.datetime.today().isoformat() if currentDate is None else currentDate
+    now = datetime.datetime.today() if currentDate is None else currentDate
     for indi in individuals:
-        diff = (datetime.datetime.strptime(now, "%Y-%m-%d") - datetime.datetime.strptime(indi.death, "%Y-%m-%d")).days
-        if diff >= 0 and diff <= 30:
-            L.append(indi.name)
+        if indi.death != "N/A" and indi.death != "" and indi.death != None:
+            diff = (now - dateFromString(indi.death)).days
+            if diff >= 0 and diff <= 30:
+                L.append(indi.name)
     return L
 
 def printer(individuals, families):

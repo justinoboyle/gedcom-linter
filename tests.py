@@ -495,7 +495,7 @@ class TestGEDCOM(unittest.TestCase):
         
         indiList = [person1, person2, person3]
 
-        if listRecentBirths(indiList, "2021-03-30") != ["John Doe New", "John Boe New"]:
+        if listRecentBirths(indiList, dateFromString("2021-03-30")) == ["John Doe New", "John Boe New"]:
             failed = True
         self.assertTrue(failed)
 
@@ -514,13 +514,13 @@ class TestGEDCOM(unittest.TestCase):
         person2.name = "John Boe New"
         person2.setDeath("2021-03-01")
 
-        person3 = Individual('@TEST2', 1)
+        person3 = Individual('@TEST3', 1)
         person3.name = "John Coe Old"
         person3.setDeath("2020-01-15")
         
         indiList = [person1, person2, person3]
 
-        if listRecentDeaths(indiList, "2021-03-30") != ["John Doe New", "John Boe New"]:
+        if listRecentDeaths(indiList, dateFromString("2021-03-30")) == ["John Doe New", "John Boe New"]:
             failed = True
         self.assertTrue(failed)
 
