@@ -135,11 +135,13 @@ class TestGEDCOM(unittest.TestCase):
             failed = True
         self.assertTrue(failed)
 
-    # US09 ??
+    # US09 ?? - Birth before death of parents
+    # Child should be born before death of mother and before 9 months after death of father
 
-    # US10 ??
+    # US10 ?? - Marriage after 14
+    # Marriage should be at least 14 years after birth of both spouses (parents must be at least 14 years old)
 
-    # US11 (Irakli)
+    # US11 (Irakli) - No Bigamy
     # Marriage should not occur during marriage to another spouse
     def test_US11(self):
         '''Checks if someone is married to more than 1 person'''
@@ -159,11 +161,15 @@ class TestGEDCOM(unittest.TestCase):
             failed = True
         self.assertTrue(failed)
 
-    # US12 ??
+    # US12 ?? - Parents not too old
+    # Mother should be less than 60 years older than her children and father should be less than 80 years older than his children
 
-    # US13 ??
 
-    # US14 ??
+    # US13 ?? - Siblings spacing
+    # Birth dates of siblings should be more than 8 months apart or less than 2 days apart (twins may be born one day apart, e.g. 11:59 PM and 12:02 AM the following calendar day)
+
+    # US14 ?? - Multiple births <= 5
+    # No more than five siblings should be born at the same time
     
     # US15 (Irakli)
     # There should be fewer than 15 siblings in a family
@@ -199,7 +205,8 @@ class TestGEDCOM(unittest.TestCase):
             failed = True
         self.assertTrue(failed)
 
-    # US17 ??
+    # US17 ?? - No marriages to descendants
+    # Parents should not marry any of their descendants
 
     # US18 - Siblings should not marry (Max Sprint 3)
     # Siblings should not marry
@@ -338,6 +345,12 @@ class TestGEDCOM(unittest.TestCase):
     #         failed = True
     #     self.assertTrue(failed)
 
+    # US20 ?? - Aunts and uncles
+    # Aunts and uncles should not marry their nieces or nephews
+
+    # US21 ?? - Correct gender for role
+    # Husband in family should be male and wife in family should be female
+
     # US22 - Unique IDs
     # All individual IDs should be unique and all family IDs should be unique
     def test_US22(self):
@@ -396,7 +409,8 @@ class TestGEDCOM(unittest.TestCase):
             failed = True
         self.assertTrue(failed)
 
-    # US25 ???
+    # US25 ?? - Unique first names in families
+    # No more than one child with the same name and birth date should appear in a family
 
     # US26 (Irakli)
     # the information in the individual and family records should be consistent
@@ -420,7 +434,26 @@ class TestGEDCOM(unittest.TestCase):
             failed = True
         self.assertTrue(failed)
 
-    # US27 ??
+    # US27 ?? - Include individual ages
+    # Include person's current age when listing individuals
+
+    # US28 ?? - Order siblings by age
+    # List siblings in families by decreasing age, i.e. oldest siblings first
+
+    # US29 ?? - List deceased
+    # List all deceased individuals in a GEDCOM file
+
+    # US30 ?? - List living married
+    # List all living married people in a GEDCOM file
+
+    # US31 ?? - List living single
+    # List all living people over 30 who have never been married in a GEDCOM file
+
+    # US32 ?? - List multiple births 
+    # List all multiple births in a GEDCOM file
+
+    # US33 ?? - List orphans
+    # List all orphaned children (both parents dead and child < 18 years old) in a GEDCOM file
 
     # US34
     # List all couples who were married when the older spouse was 
