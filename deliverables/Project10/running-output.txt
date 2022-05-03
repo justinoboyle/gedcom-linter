@@ -1,0 +1,44 @@
+λ ~/proj/gedcom-linter/ justin-sprint-4* cat samples/doe_family.ged | ./run
+INDIVIDUALS
+ID     Name           Gender   Birthday       Age  Alive   Death           Children        Spouse        
+@I7@   Jane Doe        F       2010-04-11     12   True    N/A             [@F1@]          N/A            
+@I1@   John Doe        M       2000-05-02     22   True    N/A             [@F1@]          N/A            
+@I5@   Sydney Freeman  F       1940-08-05     30   False   1970-10-01      []              @F2@           
+@I13@  Karen Doe       F       1981-10-04     40   True    N/A             [@F4@]          N/A            
+@I3@   Melissa Smith   F       1970-06-09     51   True    N/A             [@F3@]          @F1@           
+@I12@  Rhett Doe       M       1969-12-19     52   True    N/A             [@F2@]          N/A            
+@I2@   Michael Doe     M       1969-01-07     53   True    N/A             [@F2@]          @F1@           
+@I10@  John McCarthy   M       1925-11-06     59   False   1985-05-11      []              @F5@           
+@I11@  Amelia Earhart  F       1920-03-11     69   False   1990-02-11      []              @F5@           
+@I9@   Joan McCarthy   F       1950-08-02     71   True    N/A             [@F5@]          @F3@           
+@I8@   Robert Smith    M       1949-02-05     73   True    N/A             []              @F3@           
+@I6@   Caroline Garcia F       1945-09-03     76   True    N/A             []              @F4@           
+@I4@   Wilford Doe     M       1939-11-08     82   True    N/A             []              @F4@           
+
+FAMILIES
+ID     Married         Divorced        Husband ID      Husband Name    Wife ID         Wife Name       Children      
+@F1@   1995-08-03      N/A             @I2@            Michael Doe     @I3@            Melissa Smith   ['@I1@', '@I7@']
+@F2@   1953-01-09      N/A             @I4@            Wilford Doe     @I5@            Sydney Freeman  ['@I2@', '@I12@']
+@F3@   N/A             N/A             @I8@            Robert Smith    @I9@            Joan McCarthy   ['@I3@']       
+@F4@   1980-02-13      N/A             @I4@            Wilford Doe     @I6@            Caroline Garcia ['@I13@']      
+@F5@   N/A             N/A             @I10@           John McCarthy   @I11@           Amelia Earhart  ['@I9@']       
+
+John Doe (22) is single
+Michael Doe (53) is single
+Melissa Smith (51) is single
+Wilford Doe (82) is single
+Sydney Freeman (30) is single
+Caroline Garcia (76) is single
+Robert Smith (73) is single
+Joan McCarthy (71) is single
+John McCarthy (59) is single
+Amelia Earhart (69) is single
+Rhett Doe (52) is single
+Karen Doe (40) is single
+Bigamy: already married! (Individual ID @I4@)
+ID @F1@ is not unique!
+ID @F2@ is not unique!
+ID @F3@ is not unique!
+ID @F4@ is not unique!
+ID @F5@ is not unique!
+Bigamy found in family id @F4@
