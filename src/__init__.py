@@ -337,10 +337,10 @@ def runParser(lines, isFailMode):
                 line = lines[i]
                 if line.tag == "MARR":
                     i+=1
-                    families[-1].setMarried(lines[i].args[0] + " " + lines[i].args[1] + " " + lines[i].args[2])
+                    families[-1].setMarried(lines[i].args[2] + "-" + toMonths(lines[i].args[1]) + "-" + lines[i].args[0].zfill(2))
                 elif line.tag == "DIV":
                     i+=1
-                    families[-1].setDivorced(lines[i].args[0] + " " + lines[i].args[1] + " " + lines[i].args[2])
+                    families[-1].setDivorced(lines[i].args[2] + "-" + toMonths(lines[i].args[1]) + "-" + lines[i].args[0].zfill(2))
                 elif line.tag == "HUSB":
                     families[-1].husbandId = line.args[0]
                     for indi in individuals:
@@ -517,6 +517,8 @@ def listOlderSpouses(families):
     '''checks if someone's spouse is at least twice their own age when they married'''
     L = []
     for fam in families:
+        if fam._husbRef != "N/A" or fam._wifeRef != "N/A":
+            continue
         husband = fam._husbRef
         wife = fam._wifeRef
         husbandDiff = (datetime.datetime.strptime(fam.married, "%Y-%m-%d") - datetime.datetime.strptime(husband.birthday, "%Y-%m-%d")).days
