@@ -522,8 +522,6 @@ class TestGEDCOM(unittest.TestCase):
 
             family2 = Family('@FAM2')
             family2.children = [niece.id, nephew.id]
-
-            postvalidate([aunt, uncle, niece, nephew], [family1, family2])
             
         except:
             failed = True
@@ -657,53 +655,43 @@ class TestGEDCOM(unittest.TestCase):
     def test_US27(self):
         ''' Post list should have person's age '''
         prepareTest()
-        person1 = Individual('@TEST1', 1)
-        person1.name = "John Doe"
-        person1.setAge(15)
+        failed = False
+        try:
+            person1 = Individual('@TEST1', 1)
+            person1.name = "John Doe"
+            person1.setBirthday("2021-01-01")
+            person1.setDeath("2021-01-01")
 
-        postvalidate([person1], [])
+            person2 = Individual('@TEST2', 2)
+            person2.name = "Jane Doe"
+            person2.setBirthday("2021-01-01")
+            person2.setDeath("2021-01-01")
 
-        res = printprep([person1], [])
-
-        self.assertTrue(''.join(res).__contains__('15'))
+            postvalidate([person1, person2], [])
+        except:
+            failed = True
+        self.assertTrue(failed)
 
     # US28 - Order siblings by age
     # List siblings in families by decreasing age, i.e. oldest siblings first
     def test_US28(self):
-        ''' Post list should put older first '''
+        ''' Post list should have person's age '''
         prepareTest()
         person1 = Individual('@TEST1', 1)
         person1.name = "John Doe"
-        person1.setBirthday("1980-01-01")
+        person1.setBirthday("2021-01-01")
+        person1.setDeath("2021-01-01")
 
         person2 = Individual('@TEST2', 2)
         person2.name = "Jane Doe"
-        person2.setBirthday("1980-01-02")
-
-        person3 = Individual('@TEST3', 2)
-        person3.name = "Jane2 Doe"
-        person3.setBirthday("2021-01-02")
-
-        husband = Individual('@TEST4', 2)
-        husband.name = "John Doe"
-        husband.setBirthday("1960-01-01")
-
-        wife = Individual('@TEST5', 2)
-        wife.name = "Jane Doe"
-        wife.setBirthday("1960-01-02")
-
-        family = Family('@FAM1')
-        family.addHusband(husband)
-        family.addWife(wife)
-        family.setMarried("1970-01-01")
-        family.addChild(person2)
-        family.addChild(person1)
-        family.addChild(person3)
+        person2.setBirthday("2021-01-02")
+        person2.setDeath("2021-01-01")
 
         x= [person1, person2]
-        individuals, families = postvalidate(x, [family])
+        individuals, families = postvalidate(x, [])
 
-        self.assertEqual(families[0].children[0], person3.id)
+        # siblings list should now have person2 before person1
+        self.assertTrue(individuals[0].siblings[0].id == person2.id)
 
     # US29 - List deceased
     # List all deceased individuals in a GEDCOM file
@@ -713,20 +701,17 @@ class TestGEDCOM(unittest.TestCase):
         person1 = Individual('@TEST1', 1)
         person1.name = "John Doe"
         person1.setBirthday("2021-01-01")
-        person1.setDeath("2022-01-01")
+        person1.setDeath("2021-01-01")
 
         person2 = Individual('@TEST2', 2)
         person2.name = "Jane Doe"
         person2.setBirthday("2021-01-02")
-        person2.setDeath("2022-01-01")
+        person2.setDeath("2021-01-01")
 
         postvalidate([person1, person2], [])
 
-        ret = printprep([person1, person2], [])
-
         # check if the text person1 id is in list buffer
-        self.assertTrue(''.join(ret).__contains__(person1.name))
-
+        self.assertTrue(listBuffer.__contains__(person1.id))
 
     # US30 - List living married
     # List all living married people in a GEDCOM file
@@ -736,24 +721,17 @@ class TestGEDCOM(unittest.TestCase):
         person1 = Individual('@TEST1', 1)
         person1.name = "John Doe"
         person1.setBirthday("2021-01-01")
-        # person1.setDeath("2021-01-01")
+        person1.setDeath("2021-01-01")
 
         person2 = Individual('@TEST2', 2)
         person2.name = "Jane Doe"
         person2.setBirthday("2021-01-02")
-        # person2.setDeath("2021-01-01")
+        person2.setDeath("2021-01-01")
 
-        family = Family('@FAM1')
-        family.setMarried("2022-01-01")
-        family.addHusband(person1)
-        family.addWife(person2)
-
-        postvalidate([person1, person2], [family])
-
-        ret = printprep([person1, person2], [family])
+        postvalidate([person1, person2], [])
 
         # check if the text person1 id is in list buffer
-        self.assertTrue(''.join(ret).__contains__(person1.name))
+        self.assertTrue(listBuffer.__contains__(person1.id))
 
     # US31 - List living single
     # List all living people over 30 who have never been married in a GEDCOM file
@@ -762,20 +740,18 @@ class TestGEDCOM(unittest.TestCase):
         prepareTest()
         person1 = Individual('@TEST1', 1)
         person1.name = "John Doe"
-        person1.setBirthday("1990-01-01")
-        # person1.setDeath("2021-01-01")
+        person1.setBirthday("2021-01-01")
+        person1.setDeath("2021-01-01")
 
         person2 = Individual('@TEST2', 2)
         person2.name = "Jane Doe"
-        person2.setBirthday("1990-01-02")
-        # person2.setDeath("2021-01-01")
+        person2.setBirthday("2021-01-02")
+        person2.setDeath("2021-01-01")
 
         postvalidate([person1, person2], [])
 
-        entireBuffer = ' '.join(getListBuffer())
-
         # check if the text person1 id is in list buffer
-        self.assertTrue(entireBuffer.__contains__(person1.name))
+        self.assertTrue(listBuffer.__contains__(person1.id))
 
     # US32 - List multiple births 
     # List all multiple births in a GEDCOM file
@@ -785,19 +761,17 @@ class TestGEDCOM(unittest.TestCase):
         person1 = Individual('@TEST1', 1)
         person1.name = "John Doe"
         person1.setBirthday("2021-01-01")
-        # person1.setDeath("2021-01-01")
+        person1.setDeath("2021-01-01")
 
         person2 = Individual('@TEST2', 2)
         person2.name = "Jane Doe"
-        person2.setBirthday("2021-01-01")
-        # person2.setDeath("2021-01-01")
+        person2.setBirthday("2021-01-02")
+        person2.setDeath("2021-01-01")
 
         postvalidate([person1, person2], [])
 
-        entireBuffer = ' '.join(getListBuffer())
-
         # check if the text person1 id is in list buffer
-        self.assertTrue(entireBuffer.__contains__(person1.name))
+        self.assertTrue(listBuffer.__contains__(person1.id))
 
     # US33 - List orphans
     # List all orphaned children (both parents dead and child < 18 years old) in a GEDCOM file
@@ -806,36 +780,24 @@ class TestGEDCOM(unittest.TestCase):
         prepareTest()
         person1 = Individual('@TEST1', 1)
         person1.name = "John Doe"
-        person1.setBirthday("1980-01-01")
-        person1.setDeath("2022-01-01")
+        person1.setBirthday("2021-01-01")
+        person1.setDeath("2021-01-01")
 
         person2 = Individual('@TEST2', 2)
         person2.name = "Jane Doe"
-        person2.setBirthday("1980-01-02")
-        person2.setDeath("2022-01-01")
-
-        # add a child
-        person3 = Individual('@TEST3', 2)
-        person3.name = "Jane Doe"
-        person3.setBirthday("2021-01-02")
-        # person3.setDeath("2022-01-01")
+        person2.setBirthday("2021-01-02")
+        person2.setDeath("2021-01-01")
 
         # marry them and add a child
         family = Family('@FAM1')
-        family.setMarried("1990-01-01")
-        family.addWife(person2)
-        family.addHusband(person1)
-        family.addChild(person3)
+        family.wifeId = person1.id
+        family.husbandId = person2.id
+        family.childrenIds = [person1.id]
         
-        postvalidate([person1, person2, person3], [family])
+        postvalidate([person1, person2], [])
 
         # check if the text person1 id is in list buffer
-        found = False
-        for i in getListBuffer():
-            if i.__contains__(person3.id):
-                found = True
-                break
-        self.assertTrue(found)
+        self.assertTrue(listBuffer.__contains__(person1.id))
 
     # US34
     # List all couples who were married when the older spouse was 
@@ -910,9 +872,7 @@ class TestGEDCOM(unittest.TestCase):
         
         indiList = [person1, person2, person3]
 
-        ret = ', '.join(listRecentBirths(indiList, dateFromString("2021-03-30")))
-
-        if ret.__contains__("John Doe New") and ret.__contains__("John Boe New"):
+        if listRecentBirths(indiList, dateFromString("2021-03-30")) == ["John Doe New", "John Boe New"]:
             failed = True
         self.assertTrue(failed)
 
@@ -937,9 +897,7 @@ class TestGEDCOM(unittest.TestCase):
         
         indiList = [person1, person2, person3]
 
-        ret = ', '.join(listRecentDeaths(indiList, dateFromString("2021-03-30")))
-
-        if ret.__contains__("John Doe New") and ret.__contains__("John Boe New"):
+        if listRecentDeaths(indiList, dateFromString("2021-03-30")) == ["John Doe New", "John Boe New"]:
             failed = True
         self.assertTrue(failed)
 

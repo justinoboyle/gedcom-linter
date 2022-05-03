@@ -63,6 +63,10 @@ def doListBuffer(msg):
     global listBuffer
     listBuffer.append(msg)
 
+def getListBuffer():
+    global listBuffer
+    return listBuffer
+
 def clearListBuffer():
     global listBuffer
     listBuffer = []
@@ -128,6 +132,9 @@ class Individual:
         self.birthday = birthday
         uniqueIdBuffer(self.name + self.birthday, "INDI-BDAYD")
         self.validateBirthDeath()
+        # set age
+        if self.birthday != "N/A":
+            self.setAge(datetime.datetime.now().year - dateFromString(self.birthday).year)
 
     def setDeath(self, death):
         self.death = death
@@ -167,6 +174,7 @@ class Family:
         self.wifeId = "N/A"
         self.wifeName = "N/A"
         self.children = []
+        self._children = []
         self._wifeRef = None
         self._husbRef = None
 
@@ -195,7 +203,14 @@ class Family:
         childLastName = child.name.split(" ")[-1]
         # if last name of husbandName == last name of childName
         if husbandLastName == childLastName:
-            self.children.append(child.id)
+            self._children.append(child)
+            self._children.sort(key=lambda x: x.age)
+            # self._children.reverse()
+            self.children = []
+            for child in self._children:
+                self.children.append(child.id)
+            child.family = self.id
+
         else:
             doError("Last name of husband and child must match!")
         
@@ -327,12 +342,12 @@ def runParser(lines, isFailMode):
                     i+=1
                     families[-1].setDivorced(lines[i].args[0] + " " + lines[i].args[1] + " " + lines[i].args[2])
                 elif line.tag == "HUSB":
-                    families[-1].husband_id = line.args[0]
+                    families[-1].husbandId = line.args[0]
                     for indi in individuals:
                         if indi.id == line.args[0]:
                             families[-1].husband_name = indi.name
                 elif line.tag == "WIFE":
-                    families[-1].wife_id = line.args[0]
+                    families[-1].wifeId = line.args[0]
                     for indi in individuals:
                         if indi.id == line.args[0]:
                             families[-1].wife_name = indi.name
@@ -353,11 +368,11 @@ def runParser(lines, isFailMode):
         else:
             for mergedFam in mergedFamilies:
                 if mergedFam.id == fam.id:
-                    if fam.husband_id != "N/A":
-                        mergedFam.husband_id = fam.husband_id
+                    if fam.husbandId != "N/A":
+                        mergedFam.husbandId = fam.husbandId
                         mergedFam.husband_name = fam.husband_name
-                    if fam.wife_id != "N/A":
-                        mergedFam.wife_id = fam.wife_id
+                    if fam.wifeId != "N/A":
+                        mergedFam.wifeId = fam.wifeId
                         mergedFam.wife_name = fam.wife_name
                     if fam.married != "N/A":
                         mergedFam.setMarried(fam.married)
@@ -384,15 +399,15 @@ def runParser(lines, isFailMode):
                     if indi.id == child:
                         # find the birthday of the father and mother
                         for indi2 in individuals:
-                            if indi2.id == fam.husband_id:
+                            if indi2.id == fam.husbandId:
                                 fatherDeath = indi2.death
-                            if indi2.id == fam.wife_id:
+                            if indi2.id == fam.wifeId:
                                 motherDeath = indi2.death
                         # if the child's birthday is before the death of the father or mother, print an error
                         if (fatherDeath != "N/A") and datetime.datetime.strptime(indi.birthday, "%Y-%m-%d") > datetime.datetime.strptime(fatherDeath, "%Y-%m-%d"):
-                            doError("FAMILY: US09: " + fam.id + ": Child " + indi.id + " born " + indi.birthday + " after death of father " + fam.husband_id + " " + fatherDeath)
+                            doError("FAMILY: US09: " + fam.id + ": Child " + indi.id + " born " + indi.birthday + " after death of father " + fam.husbandId + " " + fatherDeath)
                         if (motherDeath != "N/A") and datetime.datetime.strptime(indi.birthday, "%Y-%m-%d") > datetime.datetime.strptime(motherDeath, "%Y-%m-%d"):
-                            doError("FAMILY: US09: " + fam.id + ": Child " + indi.id + " born " + indi.birthday + " after death of mother " + fam.wife_id + " " + motherDeath)
+                            doError("FAMILY: US09: " + fam.id + ": Child " + indi.id + " born " + indi.birthday + " after death of mother " + fam.wifeId + " " + motherDeath)
     
     # US11 No Bigamy (Irakli)
     # Marriage should not occur during marriage to another spouse
@@ -463,10 +478,28 @@ def postvalidate(individuals, mergedFamilies):
         if len(fam.children) >= 15:
             doError("Too many siblings in family id " + fam.id)
         for fam2 in mergedFamilies:
-            if fam.married == fam2.married and fam.husband_id == fam2.husband_id and fam.wife_id == fam2.wife_id and fam.id != fam2.id:
-                doError("FAMILY: US24: " + fam.id + ": " + fam.married + ": " + fam.husband_id + " and " + fam.wife_id + ": are the same family")
+            if fam.married == fam2.married and fam.husbandId == fam2.husbandId and fam.wifeId == fam2.wifeId and fam.id != fam2.id:
+                doError("FAMILY: US24: " + fam.id + ": " + fam.married + ": " + fam.husbandId + " and " + fam.wifeId + ": are the same family")
 
-
+    for individual in individuals:
+        # if individual has family
+        if individual.family != "N/A":
+            # get family by ID from mergedFamilies
+            family = None
+            for fam in mergedFamilies:
+                if individual.family == fam.id:
+                    family = fam
+            # if family is not None
+            if family != None:
+                checkConsistency(individual, family)
+    
+    listOlderSpouses(mergedFamilies)
+    listRecentBirths(individuals)
+    listRecentDeaths(individuals)
+    listAllOrphans(individuals, mergedFamilies)
+    listMultipleBirths(individuals)
+    listSinglePeople(individuals)
+    individuals = sorted(individuals, key=lambda x: x.age if x.age != 'N/A' else 0, reverse=False)
     return individuals, mergedFamilies
 
 
@@ -475,7 +508,7 @@ def checkConsistency(individual, family):
     indiID = individual.id
     if indiID == family.husbandId or indiID == family.wifeId:
         return True
-    for child in family.children:
+    for child in family._children:
         if indiID == child.id:
             return True
     doError("individual info is inconsistent with family info!")
@@ -496,6 +529,38 @@ def listOlderSpouses(families):
             L.append(fam.id)
     return L
 
+def listMultipleBirths(individuals):
+    ''' checks if there are people with the same birthday '''
+    L = []
+    for individual in individuals:
+        if individual.birthday != "N/A":
+            for individual2 in individuals:
+                if individual.birthday == individual2.birthday and individual.id != individual2.id:
+                    L.append(individual.id)
+                    doListBuffer(f"{individual.name} ({individual.age}) has the same birthday as {individual2.name} ({individual2.age})")
+    return L
+
+def listSinglePeople(individuals):
+    ''' lists all single people '''
+    L = []
+    for individual in individuals:
+        if individual.age >= 14 and individual.family == "N/A":
+            L.append(individual.id)
+            doListBuffer(f"{individual.name} ({individual.age}) is single")
+    return L
+
+def listAllOrphans(individuals, families):
+    '''lists all orphans where both parents are dead'''
+    L = []
+    for indi in individuals:
+        # find if both parents are dead
+        for fam in families:
+            if indi.family == fam.id:
+                if fam._husbRef.death != "N/A" and fam._wifeRef.death != "N/A":
+                    doListBuffer(indi.id + " is an orphan!")
+                    L.append(indi.id)
+    return L
+
 def listRecentBirths(individuals, currentDate=None):
     '''returns individuals that were born in the last 30 days'''
     L = []
@@ -504,7 +569,8 @@ def listRecentBirths(individuals, currentDate=None):
         if indi.birthday != "N/A" and indi.birthday != "" and indi.birthday != None:
             diff = (now - dateFromString(indi.birthday)).days
             if diff >= 0 and diff <= 30:
-                L.append(indi.name)
+                doListBuffer(indi.name + " was born in the last 30 days!")
+                L.append(indi.name + " was born in the last 30 days!")
     return L
 
 def listRecentDeaths(individuals, currentDate=None):
@@ -515,28 +581,37 @@ def listRecentDeaths(individuals, currentDate=None):
         if indi.death != "N/A" and indi.death != "" and indi.death != None:
             diff = (now - dateFromString(indi.death)).days
             if diff >= 0 and diff <= 30:
-                L.append(indi.name)
+                doListBuffer(indi.name + " died in the last 30 days!")
+                L.append(indi.name + " died in the last 30 days!")
     return L
 
-def printer(individuals, families):
+def printprep(individuals, families):
+    buffer = []
     # create a table of individuals and families using ljust to create whitespace and keep table aligned
-    # 'ID', 'Name', 'Gender', 'Birthday', 'Age', 'Alive', 'Death', 'Child', 'Spouse'
-    print("INDIVIDUALS")
-    print("ID".ljust(6), "Name".ljust(15), "Gender".ljust(7), "Birthday".ljust(15), "Age".ljust(4), "Alive".ljust(7), \
-        "Death".ljust(15), "Children".ljust(15), "Spouse".ljust(15))
+    # 'ID' + 'Name' + 'Gender' + 'Birthday' + 'Age' + 'Alive' + 'Death' + 'Child' + 'Spouse'
+    buffer.append("INDIVIDUALS")
+    buffer.append("ID".ljust(6)+ " Name".ljust(15)+ " Gender".ljust(7) + " Birthday".ljust(15) + " Age".ljust(4) + "Alive".ljust(7) + \
+        " Death".ljust(15) + " Children".ljust(15) + " Spouse".ljust(15))
 
     for indi in individuals:
-        print(str(indi.id).ljust(6), str(indi.name).ljust(15), str(indi.sex).ljust(7), str(indi.birthday).ljust(15), \
-            str(indi.age).ljust(4), str(indi.isAlive).ljust(7), str(indi.death).ljust(15), str(indi.children).ljust(15), str(indi.spouse).ljust(15))
+        buffer.append(str(indi.id).ljust(6) + " " + str(indi.name).ljust(15) + " " + str(indi.sex).ljust(7) + " " + str(indi.birthday).ljust(15) + \
+            str(indi.age).ljust(4) + " " + str(indi.isAlive).ljust(7) + " " + str(indi.death).ljust(15) + " " + str(indi.children).ljust(15) + " " + str(indi.spouse).ljust(15))
 
-    # do the same for families with columns 'ID', 'Married', 'Divorced', 'Husband ID', 'Husband Name', 'Wife ID', 'Wife Name', 'Children'
-    print("\nFAMILIES")   
-    print("ID".ljust(6), "Married".ljust(15), "Divorced".ljust(15), "Husband ID".ljust(15), "Husband Name".ljust(15), \
-        "Wife ID".ljust(15), "Wife Name".ljust(15), "Children".ljust(15))
+    # do the same for families with columns 'ID' + 'Married' + 'Divorced' + 'Husband ID' + 'Husband Name' + 'Wife ID' + 'Wife Name' + 'Children'
+    buffer.append("\nFAMILIES")   
+    buffer.append("ID".ljust(6) + " Married".ljust(15) + " Divorced".ljust(15) + " Husband ID".ljust(15) + " Husband Name".ljust(15) + \
+        " Wife ID".ljust(15) + " Wife Name".ljust(15) + " Children".ljust(15))
     for fam in families:
-        print(str(fam.id).ljust(6), str(fam.married).ljust(15), str(fam.divorced).ljust(15), str(fam.husbandId).ljust(15), \
-            str(fam.husbandName).ljust(15), str(fam.wifeId).ljust(15), str(fam.wifeName).ljust(15), str(fam.children).ljust(15))
+        buffer.append(str(fam.id).ljust(6) + " " + str(fam.married).ljust(15) + " " + str(fam.divorced).ljust(15) + " " + str(fam.husbandId).ljust(15)  + " " +  \
+            str(fam.husbandName).ljust(15)  + " " +  str(fam.wifeId).ljust(15)  + " " +  str(fam.wifeName).ljust(15) + " " + str(fam.children).ljust(15))
+    return buffer
 
+def printer(individuals, families):
+
+    buffer = printprep(individuals, families)
+    for line in buffer:
+        print(line)
+    
     # print all in listBuffer
     for item in listBuffer:
         print(item)
